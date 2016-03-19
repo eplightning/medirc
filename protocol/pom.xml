@@ -68,7 +68,7 @@
                             <target>
                                 <property name="protoc.filename" value="protoc-${protobuf.version}-${os.detected.classifier}.exe" />
                                 <property name="protoc.filepath" value="${project.build.directory}/${protoc.filename}" />
-                                <chmod file="${protoc.filename}" perm="ugo+rx" />
+                                <chmod file="${protoc.filepath}" perm="ugo+rx" />
                                 <mkdir dir="${protobuf.output}" />
                                 <path id="protobuf.input.filepaths.path">
                                     <fileset dir="${protobuf.input}">
