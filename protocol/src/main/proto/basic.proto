@@ -4,7 +4,6 @@ package medirc;
 
 option java_package = "org.eplight.medirc.protocol";
 
-
 message Heartbeat {
 
 }
