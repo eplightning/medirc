@@ -24,6 +24,8 @@
         <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>2.3.1</maven-jar-plugin.version>
         <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
+        <log4j.version>2.5</log4j.version>
+        <netty.version>4.0.35.Final</netty.version>
     </properties>
 
     <build>
@@ -45,6 +47,11 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
         </dependency>
     </dependencies>
 
