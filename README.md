@@ -44,8 +44,8 @@ Bartosz Wysocki 117239
 9. Przewidywane trudności i problemy
  - wdrożenie dodatkowej funkcjonalności (jeśli wystarczy czasu)
    - komunikacja głosowa
-     - zapoznanie się z kodekami dźwięku
-     - znaczna rozbudowa serwera - strumieniowanie dźwięku poprzez TCP nie jest dobrym pomysłem
+    - zapoznanie się z kodekami dźwięku
+    - znaczna rozbudowa serwera - strumieniowanie dźwięku poprzez TCP nie jest dobrym pomysłem
 
 
 
