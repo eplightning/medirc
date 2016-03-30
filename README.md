@@ -43,9 +43,9 @@ Bartosz Wysocki 117239
  - serwer - Bartosz Sławianowski
 9. Przewidywane trudności i problemy
  - wdrożenie dodatkowej funkcjonalności (jeśli wystarczy czasu)
-  - komunikacja głosowa
-    - zapoznanie się z kodekami dźwięku
-    - znaczna rozbudowa serwera - strumieniowanie dźwięku poprzez TCP nie jest dobrym pomysłem
+   - komunikacja głosowa
+     - zapoznanie się z kodekami dźwięku
+     - znaczna rozbudowa serwera - strumieniowanie dźwięku poprzez TCP nie jest dobrym pomysłem
 
 
 
