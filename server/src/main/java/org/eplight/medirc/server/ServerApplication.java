@@ -2,9 +2,22 @@ package org.eplight.medirc.server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.server.config.ConfigurationManager;
 import org.eplight.medirc.server.config.providers.PropertiesConfigurationProvider;
+import org.eplight.medirc.server.event.EventLoop;
+import org.eplight.medirc.server.event.consumers.DispatcherConsumer;
+import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
+import org.eplight.medirc.server.event.dispatchers.function.message.MessageFunction;
+import org.eplight.medirc.server.event.events.MessageEvent;
+import org.eplight.medirc.server.event.queue.LinkedEventQueue;
+import org.eplight.medirc.server.modules.SimpleModuleManager;
+import org.eplight.medirc.server.modules.auth.AuthModule;
 import org.eplight.medirc.server.network.NetworkManager;
+import org.eplight.medirc.server.user.User;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServerApplication {
 
@@ -12,6 +25,10 @@ public class ServerApplication {
 
     protected ConfigurationManager config;
     protected NetworkManager network;
+    protected EventLoop loop;
+    protected MessageDispatcher messageDispatcher;
+    protected Map<Integer, User> users;
+    protected SimpleModuleManager modules;
 
     static public void main(String[] argv) {
         try {
@@ -27,7 +44,22 @@ public class ServerApplication {
         config.addProvider(new PropertiesConfigurationProvider(
                 ServerApplication.class.getResourceAsStream("/default.properties")));
 
-        network = new NetworkManager(config);
+        loop = new EventLoop(new LinkedEventQueue());
+
+        messageDispatcher = new MessageDispatcher();
+        loop.registerConsumer(new DispatcherConsumer<MessageEvent>(messageDispatcher, MessageEvent.class));
+
+        network = new NetworkManager(config, loop.getQueue());
+
+        users = new HashMap<>();
+
+        modules = new SimpleModuleManager();
+
+        messageDispatcher.register(Basic.Heartbeat.class, new MessageFunction<Basic.Heartbeat>((channel, msg) -> {
+            // TODO: Obsluga wiadomosci
+        }));
+
+        modules.register(new AuthModule());
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -40,16 +72,22 @@ public class ServerApplication {
     }
 
     public void run() throws Exception {
+        logger.info("Starting modules");
+        modules.start();
+
         logger.info("Getting ready to accept connections ...");
         network.initServers();
 
-        while (true) {
-            Thread.sleep(1000);
-        }
+        logger.info("Entering event loop ...");
+        loop.run();
+
+        logger.info("Event loop interrupted, closing application");
     }
 
     public void shutdown() {
         logger.info("Shutting down ...");
+
+        modules.stop();
 
         network.stopServers();
     }

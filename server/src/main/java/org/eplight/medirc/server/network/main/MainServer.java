@@ -6,6 +6,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.server.config.ConfigurationManager;
+import org.eplight.medirc.server.event.queue.EventQueue;
 
 public class MainServer {
 
@@ -15,13 +16,13 @@ public class MainServer {
 
     protected ServerBootstrap boot;
 
-    public MainServer(ConfigurationManager config, EventLoopGroup bossGroup, EventLoopGroup childGroup) throws Exception {
+    public MainServer(ConfigurationManager config, EventQueue ev, EventLoopGroup bossGroup, EventLoopGroup childGroup) throws Exception {
         this.config = config;
 
         boot = new ServerBootstrap();
         boot.group(bossGroup, childGroup)
             .channel(NioServerSocketChannel.class)
-            .childHandler(new MainChannelInitializer());
+            .childHandler(new MainChannelInitializer(ev));
 
         try {
             boot.bind(config.getString("network.main.host"), config.getInt("network.main.port")).syncUninterruptibly();

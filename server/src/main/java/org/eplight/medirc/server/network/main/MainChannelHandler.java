@@ -4,41 +4,47 @@ import com.google.protobuf.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
+import org.eplight.medirc.server.event.events.MessageEvent;
+import org.eplight.medirc.server.event.queue.EventQueue;
+import org.eplight.medirc.server.network.ServerType;
+import org.eplight.medirc.server.network.SocketAttributes;
 
 public class MainChannelHandler extends ChannelInboundHandlerAdapter {
 
-    protected SocketChannel channel;
+    protected EventQueue ev;
 
-    public MainChannelHandler(SocketChannel socketChannel) {
-        channel = socketChannel;
+    public MainChannelHandler(EventQueue ev) {
+        this.ev = ev;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        // TODO: Nowy klient
+        ctx.channel().attr(SocketAttributes.LAST_ACTIVITY).set(System.currentTimeMillis());
+
+        // TODO: EventChannelActive
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object obj) throws Exception {
         if (!(obj instanceof Message)) {
-            // TODO: To chyba nie moze tutaj dojsc?
+            return;
         }
 
+        ctx.channel().attr(SocketAttributes.LAST_ACTIVITY).set(System.currentTimeMillis());
+
         Message msg = (Message) obj;
-        // TODO: Obsluga wiadomosci
+
+        ev.append(new MessageEvent(ServerType.MAIN, msg, (SocketChannel) ctx.channel()));
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        // TODO: Zamykamy polaczenie
+        ctx.channel().attr(SocketAttributes.PIPELINE_ERROR).setIfAbsent(cause.toString());
+        ctx.channel().close();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        // TODO: Czyscimy
-    }
-
-    public SocketChannel getChannel() {
-        return channel;
+        // TODO: EventChannelClosed
     }
 }
