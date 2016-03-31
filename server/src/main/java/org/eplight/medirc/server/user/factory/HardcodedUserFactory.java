@@ -1,7 +1,14 @@
 package org.eplight.medirc.server.user.factory;
 
-/**
- * Created by EpLightning on 27.03.2016.
- */
-public class HardcodedUserFactory {
+import org.eplight.medirc.server.user.User;
+
+public class HardcodedUserFactory implements UserFactory {
+
+    @Override
+    public User create(int id) {
+        if (id == 1)
+            return new User(1, "Testowy1");
+
+        return new User(2, "Testowy2");
+    }
 }

@@ -5,11 +5,13 @@ import org.eplight.medirc.protocol.Basic;
 /**
  * Created by EpLightning on 27.03.2016.
  */
-public class SimpleAuthentication implements Authentication {
+public class HardcodedAuthentication implements Authentication {
 
     @Override
     public int authenticate(Basic.Handshake msg) {
-        // TODO: Implement
-        return 0;
+        if (msg.getSimple().getUsername().isEmpty() || msg.getSimple().getUsername().equals("test"))
+            return 1;
+
+        return 2;
     }
 }

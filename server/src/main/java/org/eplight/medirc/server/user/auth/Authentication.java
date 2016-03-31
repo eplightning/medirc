@@ -1,7 +1,8 @@
 package org.eplight.medirc.server.user.auth;
 
-/**
- * Created by EpLightning on 27.03.2016.
- */
+import org.eplight.medirc.protocol.Basic;
+
 public interface Authentication {
+
+    public int authenticate(Basic.Handshake msg);
 }
