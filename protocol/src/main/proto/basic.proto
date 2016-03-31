@@ -7,3 +7,20 @@ option java_package = "org.eplight.medirc.protocol";
 message Heartbeat {
 
 }
+
+message Handshake {
+    oneof credentials {
+        SimpleCredentials simple = 1;
+    }
+}
+
+message HandshakeAck {
+    bool success = 1;
+    string errorMessage = 2;
+    string name = 3;
+}
+
+message SimpleCredentials {
+    string username = 1;
+    string password = 2;
+}
