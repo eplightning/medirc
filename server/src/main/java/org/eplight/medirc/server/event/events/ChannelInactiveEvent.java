@@ -3,14 +3,14 @@ package org.eplight.medirc.server.event.events;
 import io.netty.channel.socket.SocketChannel;
 import org.eplight.medirc.server.network.ServerType;
 
-public class ChannelActiveEvent implements ServerEvent {
+public class ChannelInactiveEvent implements ServerEvent {
 
-    protected SocketChannel channel;
     protected ServerType type;
+    protected SocketChannel channel;
 
-    public ChannelActiveEvent(ServerType type, SocketChannel channel) {
-        this.channel = channel;
+    public ChannelInactiveEvent(ServerType type, SocketChannel channel) {
         this.type = type;
+        this.channel = channel;
     }
 
     public SocketChannel getChannel() {
@@ -19,6 +19,6 @@ public class ChannelActiveEvent implements ServerEvent {
 
     @Override
     public ServerType getType() {
-        return type;
+        return null;
     }
 }

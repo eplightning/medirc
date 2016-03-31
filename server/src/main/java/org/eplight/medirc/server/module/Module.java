@@ -1,4 +1,4 @@
-package org.eplight.medirc.server.modules;
+package org.eplight.medirc.server.module;
 
 public interface Module {
 

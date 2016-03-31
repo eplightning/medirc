@@ -1,4 +1,4 @@
-package org.eplight.medirc.server.modules;
+package org.eplight.medirc.server.module;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

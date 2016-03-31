@@ -11,8 +11,8 @@ import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.event.dispatchers.function.message.MessageFunction;
 import org.eplight.medirc.server.event.events.MessageEvent;
 import org.eplight.medirc.server.event.queue.LinkedEventQueue;
-import org.eplight.medirc.server.modules.SimpleModuleManager;
-import org.eplight.medirc.server.modules.auth.AuthModule;
+import org.eplight.medirc.server.module.SimpleModuleManager;
+import org.eplight.medirc.server.module.auth.AuthModule;
 import org.eplight.medirc.server.network.NetworkManager;
 import org.eplight.medirc.server.user.User;
 
@@ -51,6 +51,7 @@ public class ServerApplication {
 
         network = new NetworkManager(config, loop.getQueue());
 
+        // TODO: Jak bedzie potrzeba dostepu z wielu watkow to zmienic
         users = new HashMap<>();
 
         modules = new SimpleModuleManager();
@@ -59,7 +60,7 @@ public class ServerApplication {
             // TODO: Obsluga wiadomosci
         }));
 
-        modules.register(new AuthModule());
+        modules.register(new AuthModule(loop, messageDispatcher, users));
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -72,7 +73,7 @@ public class ServerApplication {
     }
 
     public void run() throws Exception {
-        logger.info("Starting modules");
+        logger.info("Starting module");
         modules.start();
 
         logger.info("Getting ready to accept connections ...");

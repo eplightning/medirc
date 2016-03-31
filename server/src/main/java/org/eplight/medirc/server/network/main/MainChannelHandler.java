@@ -4,12 +4,18 @@ import com.google.protobuf.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eplight.medirc.server.event.events.ChannelActiveEvent;
+import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.MessageEvent;
 import org.eplight.medirc.server.event.queue.EventQueue;
 import org.eplight.medirc.server.network.ServerType;
 import org.eplight.medirc.server.network.SocketAttributes;
 
 public class MainChannelHandler extends ChannelInboundHandlerAdapter {
+
+    private static final Logger logger = LogManager.getLogger(MainChannelHandler.class);
 
     protected EventQueue ev;
 
@@ -19,9 +25,10 @@ public class MainChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("New connection in main server from: " + ctx.channel().remoteAddress());
         ctx.channel().attr(SocketAttributes.LAST_ACTIVITY).set(System.currentTimeMillis());
 
-        // TODO: EventChannelActive
+        ev.append(new ChannelActiveEvent(ServerType.MAIN, (SocketChannel) ctx.channel()));
     }
 
     @Override
@@ -45,6 +52,14 @@ public class MainChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        // TODO: EventChannelClosed
+        logger.info("Connection lost in main server: " + ctx.channel().remoteAddress());
+
+        String pipelineError = ctx.channel().attr(SocketAttributes.PIPELINE_ERROR).get();
+
+        if (pipelineError != null) {
+            logger.info("Pipeline error: " + pipelineError);
+        }
+
+        ev.append(new ChannelInactiveEvent(ServerType.MAIN, (SocketChannel) ctx.channel()));
     }
 }
