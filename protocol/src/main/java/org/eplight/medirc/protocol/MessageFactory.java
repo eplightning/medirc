@@ -16,6 +16,7 @@ public class MessageFactory {
 
         // id to message mapping
         tmpMap.put((short) 1, Basic.Heartbeat.getDefaultInstance());
+        tmpMap.put((short) 2, Basic.Handshake.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();
