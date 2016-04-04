@@ -29,7 +29,6 @@ public class AuthModule implements Module {
     protected Map<Integer, User> users;
     protected Authentication authenticator;
     protected UserFactory userFactory;
-    protected MessageDispatcher messages;
 
     public AuthModule(EventLoop loop, MessageDispatcher messages, Map<Integer, User> users) {
         this.loop = loop;
@@ -97,7 +96,7 @@ public class AuthModule implements Module {
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChannelInactiveEvent.class, this::onChannelInactive));
 
-        messages.register(Basic.Handshake.class, new MessageFunction<>(this::onHandshake));
+        dispatcher.register(Basic.Handshake.class, new MessageFunction<>(this::onHandshake));
     }
 
     @Override

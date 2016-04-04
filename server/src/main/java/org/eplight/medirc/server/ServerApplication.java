@@ -47,7 +47,7 @@ public class ServerApplication {
         loop = new EventLoop(new LinkedEventQueue());
 
         messageDispatcher = new MessageDispatcher();
-        loop.registerConsumer(new DispatcherConsumer<MessageEvent>(messageDispatcher, MessageEvent.class));
+        loop.registerConsumer(new DispatcherConsumer<>(messageDispatcher, MessageEvent.class));
 
         network = new NetworkManager(config, loop.getQueue());
 

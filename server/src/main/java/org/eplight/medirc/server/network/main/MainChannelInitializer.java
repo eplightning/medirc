@@ -4,8 +4,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.eplight.medirc.protocol.pipeline.ProtobufDecoder;
+import org.eplight.medirc.protocol.pipeline.ProtobufEncoder;
 import org.eplight.medirc.server.event.queue.EventQueue;
 
 public class MainChannelInitializer extends ChannelInitializer<SocketChannel> {
