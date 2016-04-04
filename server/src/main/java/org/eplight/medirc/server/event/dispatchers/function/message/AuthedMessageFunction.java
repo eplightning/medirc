@@ -10,11 +10,16 @@ import org.eplight.medirc.server.user.User;
 
 public class AuthedMessageFunction<T extends Message> implements DispatchFunction<MessageEvent> {
 
-    private static final Logger logger = LogManager.getLogger(AuthedMessageHandler.class);
+    private static final Logger logger = LogManager.getLogger(AuthedMessageFunction.class);
 
-    protected AuthedMessageHandler<T> handler;
+    protected Handler<T> handler;
 
-    public AuthedMessageFunction(AuthedMessageHandler<T> handler) {
+    public interface Handler<T extends Message> {
+
+        void handleMessage(User user, T msg);
+    }
+
+    public AuthedMessageFunction(Handler<T> handler) {
         this.handler = handler;
     }
 

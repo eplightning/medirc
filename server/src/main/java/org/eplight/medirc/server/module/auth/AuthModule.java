@@ -2,12 +2,11 @@ package org.eplight.medirc.server.module.auth;
 
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.server.event.EventLoop;
-import org.eplight.medirc.server.event.consumers.AbstractConsumer;
+import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.event.dispatchers.function.message.MessageFunction;
 import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
@@ -30,6 +29,7 @@ public class AuthModule implements Module {
     protected Map<Integer, User> users;
     protected Authentication authenticator;
     protected UserFactory userFactory;
+    protected MessageDispatcher messages;
 
     public AuthModule(EventLoop loop, MessageDispatcher messages, Map<Integer, User> users) {
         this.loop = loop;
@@ -38,15 +38,6 @@ public class AuthModule implements Module {
 
         userFactory = new HardcodedUserFactory();
         authenticator = new HardcodedAuthentication();
-
-        loop.registerConsumer(new AbstractConsumer<ChannelInactiveEvent>(ChannelInactiveEvent.class) {
-            @Override
-            public void handle(ChannelInactiveEvent e) {
-                onChannelInactive(e);
-            }
-        });
-
-        messages.register(Basic.Handshake.class, new MessageFunction<>(this::onHandshake));
     }
 
     public void onChannelInactive(ChannelInactiveEvent event) {
@@ -104,7 +95,9 @@ public class AuthModule implements Module {
 
     @Override
     public void start() {
+        loop.registerConsumer(new FunctionConsumer<>(ChannelInactiveEvent.class, this::onChannelInactive));
 
+        messages.register(Basic.Handshake.class, new MessageFunction<>(this::onHandshake));
     }
 
     @Override

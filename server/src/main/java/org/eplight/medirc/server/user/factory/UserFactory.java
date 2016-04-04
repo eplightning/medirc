@@ -7,5 +7,5 @@ import org.eplight.medirc.server.user.User;
  */
 public interface UserFactory {
 
-    public User create(int id);
+    User create(int id);
 }

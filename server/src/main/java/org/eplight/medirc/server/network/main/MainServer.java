@@ -16,7 +16,8 @@ public class MainServer {
 
     protected ServerBootstrap boot;
 
-    public MainServer(ConfigurationManager config, EventQueue ev, EventLoopGroup bossGroup, EventLoopGroup childGroup) throws Exception {
+    public MainServer(ConfigurationManager config, EventQueue ev, EventLoopGroup bossGroup, EventLoopGroup childGroup)
+            throws Exception {
         this.config = config;
 
         boot = new ServerBootstrap();
@@ -31,7 +32,7 @@ public class MainServer {
             throw e;
         }
 
-        logger.info("Main server listening on " + config.getString("network.main.host") + ":" + config.getInt("network.main.port"));
+        logger.info("Main server listening on " + config.getString("network.main.host") + ":" +
+                config.getInt("network.main.port"));
     }
-
 }

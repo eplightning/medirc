@@ -18,7 +18,7 @@ public class ChannelInactiveEvent implements ServerEvent {
     }
 
     @Override
-    public ServerType getType() {
+    public ServerType getServerType() {
         return null;
     }
 }

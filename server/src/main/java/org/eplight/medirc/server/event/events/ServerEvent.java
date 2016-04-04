@@ -7,5 +7,5 @@ import org.eplight.medirc.server.network.ServerType;
  */
 public interface ServerEvent extends Event {
 
-    public ServerType getType();
+    ServerType getServerType();
 }

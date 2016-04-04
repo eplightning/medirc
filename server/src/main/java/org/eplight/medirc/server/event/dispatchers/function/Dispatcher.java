@@ -7,5 +7,5 @@ import org.eplight.medirc.server.event.events.Event;
  */
 public interface Dispatcher {
 
-    public void dispatch(Event ev);
+    void dispatch(Event ev);
 }

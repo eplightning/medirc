@@ -17,7 +17,7 @@ public class MessageEvent implements ServerEvent {
     }
 
     @Override
-    public ServerType getType() {
+    public ServerType getServerType() {
         return type;
     }
 

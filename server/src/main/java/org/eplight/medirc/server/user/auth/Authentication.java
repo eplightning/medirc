@@ -4,5 +4,5 @@ import org.eplight.medirc.protocol.Basic;
 
 public interface Authentication {
 
-    public int authenticate(Basic.Handshake msg);
+    int authenticate(Basic.Handshake msg);
 }

@@ -2,6 +2,6 @@ package org.eplight.medirc.server.module;
 
 public interface ModuleManager {
 
-    public void start();
-    public void stop();
+    void start();
+    void stop();
 }

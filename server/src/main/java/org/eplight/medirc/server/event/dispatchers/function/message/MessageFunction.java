@@ -1,14 +1,20 @@
 package org.eplight.medirc.server.event.dispatchers.function.message;
 
 import com.google.protobuf.Message;
+import io.netty.channel.socket.SocketChannel;
 import org.eplight.medirc.server.event.dispatchers.function.DispatchFunction;
 import org.eplight.medirc.server.event.events.MessageEvent;
 
 public class MessageFunction<T extends Message> implements DispatchFunction<MessageEvent> {
 
-    protected MessageHandler<T> handler;
+    protected Handler<T> handler;
 
-    public MessageFunction(MessageHandler<T> handler) {
+    public interface Handler<T extends Message> {
+
+        void handleMessage(SocketChannel channel, T msg);
+    }
+
+    public MessageFunction(Handler<T> handler) {
         this.handler = handler;
     }
 

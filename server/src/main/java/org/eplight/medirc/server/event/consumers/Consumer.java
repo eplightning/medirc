@@ -7,5 +7,5 @@ import org.eplight.medirc.server.event.events.Event;
  */
 public interface Consumer {
 
-    public void consume(Event e);
+    void consume(Event e);
 }

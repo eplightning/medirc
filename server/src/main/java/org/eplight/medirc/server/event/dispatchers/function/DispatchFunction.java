@@ -4,5 +4,5 @@ import org.eplight.medirc.server.event.events.Event;
 
 public interface DispatchFunction<T extends Event> {
 
-    public void handleEvent(T event);
+    void handleEvent(T event);
 }
