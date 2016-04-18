@@ -8,15 +8,30 @@ Bartosz Wysocki 117239
 1. Opis projektu
  - tworzymy program umożliwiający wielu ekspertom zdalną komunikację i manipulację zdjęć
  - przykład zastosowania: zdalna analiza graficznych wyników badań pacjenta przez grupę lekarzy, którzy nie mogą spotkać się w jednym miejscu
+  
+  **SW**: Jaki byłby możliwy scenariusz wykorzystania systemu? 
+
 2. Zakładana funkcjonalność
  - grupowy czat oraz przeglądanie zdjęć
  - komunikacja tekstowa
  - prosta manipulacja zdjęciami (zaznaczanie, obracanie, zmiana rozmiaru)
  - system kont użytkowników
  - archiwum sesji – możliwość pobrania i odtworzenia przebiegu dowolnej sesji, w której braliśmy udział
+ 
+  **SW**: Dodałbym też następującą funkcjonalność:
+ - zarządzanie sesjami ("twórca"/gospodarz sesji planuje ją na konkretną datę/godzinę i wysyła zaproszenia, które wymagają potwierdzenia lub odrzucenia)
+ - każdy z użytkowników widzi sesje, których jest gospodarzem oraz do któych został zaproszony,
+ - użytkownik może podłączyć się do sesji, do której został zaproszony i która została aktywowana (rozpoczęła się),
+ - podczas sesji system powinien zarządzać tym, kto ma aktualnie "głos" (zwłaszcza, jeśli chdodzi o manipulacje na obrazach i wskazywanie poszczególnych ich elementów), przy czym gospodarz powinien mieć możliwość odbierania i przydzielania głosu (a może nawet blokowania problematycznych uczestników?),
+ - gospodarz sesji powinien mieć możliwość wcześniejszego przygotowania niezbędnych materiałów (obrazów), aby unikać wgrywania ich wszystkich  podczas trwania sesji (powinna jednak istnieć możliwość dodawania obrazów podczas konsultacji).
+ 
+
 3. Możliwe rozszerzenia
  - możliwość komunikacji głosowej (VoIP)
  - integracja z serwisami posiadającymi bazy danych chorób itp. w celu szybkiego dostępu do informacji
+ 
+ **SW**: Tutaj rozważyłbym również możliwość dodawania do sesji plików PDF (z opisem pacjenta) - system pozwalałby na ich prezentację bez analizy zawartości. 
+ 
 4. Planowana architektura systemu
  - Serwer systemu - uwierzytelnianie i autoryzacja użytkowników, obsuga sesji(wielu na raz), przechowywanie archiwum
    i obsługa dostępu do niego ...
