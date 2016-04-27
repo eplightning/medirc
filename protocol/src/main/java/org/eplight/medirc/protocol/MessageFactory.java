@@ -18,6 +18,14 @@ public class MessageFactory {
         tmpMap.put((short) 1, Basic.Heartbeat.getDefaultInstance());
         tmpMap.put((short) 2, Basic.Handshake.getDefaultInstance());
         tmpMap.put((short) 3, Basic.HandshakeAck.getDefaultInstance());
+        tmpMap.put((short) 4, Main.ActiveSessions.getDefaultInstance());
+        tmpMap.put((short) 5, Main.SyncRequest.getDefaultInstance());
+        tmpMap.put((short) 6, Main.ArchivedSessions.getDefaultInstance());
+        tmpMap.put((short) 7, Main.UserList.getDefaultInstance());
+        tmpMap.put((short) 8, Main.CreateNewSession.getDefaultInstance());
+        tmpMap.put((short) 9, Main.NewSessionResponse.getDefaultInstance());
+        tmpMap.put((short) 10, Main.SessionInvite.getDefaultInstance());
+        tmpMap.put((short) 11, Main.SessionClosed.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

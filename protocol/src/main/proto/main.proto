@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+// Obiekt sesji
+message Session {
+    uint32 id = 1;
+    string name = 2;
+    User owner = 3;
+    uint32 users = 4;
+    bool isOwner = 5;
+    bool hasStarted = 6;
+}
+
+// Obiekt użytkownika
+message User {
+    uint32 id = 1;
+    string name = 2;
+}
+
+// Klient: prośba o wysłanie poniższych 3 wiadomości
+message SyncRequest {
+}
+
+// Serwer: aktywne sesje
+message ActiveSessions {
+    repeated Session session = 1;
+}
+
+// Serwer: Archiwalne sesje
+message ArchivedSessions {
+    repeated Session session = 1;
+}
+
+// Serwer: Użytkownicy
+message UserList {
+    repeated User user = 1;
+}
+
+// Klient: Prośba o utworzenie nowej sesji
+message CreateNewSession {
+    string name = 1;
+}
+
+// Serwer: Odpowiedź na powyższą prośbe
+message NewSessionResponse {
+    bool created = 1;
+    string error = 2;
+}
+
+// Serwer: Zostałeś zaproszony do nowej sesji
+message SessionInvite {
+    Session session = 1;
+}
+
+// Serwer: Aktywna sesja została zamknięta i przeniesiona do archiwalnych
+message SessionClosed {
+    Session session = 1;
+}
