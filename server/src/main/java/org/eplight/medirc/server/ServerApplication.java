@@ -1,22 +1,21 @@
 package org.eplight.medirc.server;
 
+import com.google.inject.Guice;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.server.config.ConfigurationManager;
 import org.eplight.medirc.server.config.providers.PropertiesConfigurationProvider;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.DispatcherConsumer;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
-import org.eplight.medirc.server.event.dispatchers.function.message.MessageFunction;
 import org.eplight.medirc.server.event.events.MessageEvent;
 import org.eplight.medirc.server.event.queue.LinkedEventQueue;
+import org.eplight.medirc.server.module.ServerGuiceModule;
 import org.eplight.medirc.server.module.SimpleModuleManager;
-import org.eplight.medirc.server.module.auth.AuthModule;
+import org.eplight.medirc.server.module.auth.AuthModuleDefinition;
 import org.eplight.medirc.server.network.NetworkManager;
 import org.eplight.medirc.server.user.User;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class ServerApplication {
@@ -51,16 +50,10 @@ public class ServerApplication {
 
         network = new NetworkManager(config, loop.getQueue());
 
-        // TODO: Jak bedzie potrzeba dostepu z wielu watkow to zmienic
-        users = new HashMap<>();
+        modules = new SimpleModuleManager(Guice.createInjector(new ServerGuiceModule(config, loop, messageDispatcher,
+                network)));
 
-        modules = new SimpleModuleManager();
-
-        messageDispatcher.register(Basic.Heartbeat.class, new MessageFunction<Basic.Heartbeat>((channel, msg) -> {
-            // TODO: Obsluga wiadomosci
-        }));
-
-        modules.register(new AuthModule(loop, messageDispatcher, users));
+        modules.register(new AuthModuleDefinition());
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

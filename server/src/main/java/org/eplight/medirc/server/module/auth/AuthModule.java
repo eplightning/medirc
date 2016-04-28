@@ -18,23 +18,25 @@ import org.eplight.medirc.server.user.auth.HardcodedAuthentication;
 import org.eplight.medirc.server.user.factory.HardcodedUserFactory;
 import org.eplight.medirc.server.user.factory.UserFactory;
 
-import java.util.Map;
+import javax.inject.Inject;
 
 public class AuthModule implements Module {
 
     private static final Logger logger = LogManager.getLogger(AuthModule.class);
 
+    @Inject
     protected EventLoop loop;
+
+    @Inject
     protected MessageDispatcher dispatcher;
-    protected Map<Integer, User> users;
+
+    @Inject
+    protected Users users;
+
     protected Authentication authenticator;
     protected UserFactory userFactory;
 
-    public AuthModule(EventLoop loop, MessageDispatcher messages, Map<Integer, User> users) {
-        this.loop = loop;
-        this.dispatcher = messages;
-        this.users = users;
-
+    public AuthModule() {
         userFactory = new HardcodedUserFactory();
         authenticator = new HardcodedAuthentication();
     }
