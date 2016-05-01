@@ -10,9 +10,11 @@ import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.event.dispatchers.function.message.MessageFunction;
 import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
+import org.eplight.medirc.server.event.events.UserAuthedEvent;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.user.User;
+import org.eplight.medirc.server.user.Users;
 import org.eplight.medirc.server.user.auth.Authentication;
 import org.eplight.medirc.server.user.auth.HardcodedAuthentication;
 import org.eplight.medirc.server.user.factory.HardcodedUserFactory;
@@ -85,6 +87,7 @@ public class AuthModule implements Module {
         }
 
         attribute.set(usr);
+        usr.setChannel(channel);
         users.put(id, usr);
 
         ack.setSuccess(true);
@@ -92,6 +95,8 @@ public class AuthModule implements Module {
         channel.writeAndFlush(ack.build());
 
         logger.info("User successfully logged in: " + usr.getName());
+
+        loop.fireEvent(new UserAuthedEvent(usr, channel));
     }
 
     @Override

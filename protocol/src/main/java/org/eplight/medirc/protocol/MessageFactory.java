@@ -26,6 +26,8 @@ public class MessageFactory {
         tmpMap.put((short) 9, Main.NewSessionResponse.getDefaultInstance());
         tmpMap.put((short) 10, Main.SessionInvite.getDefaultInstance());
         tmpMap.put((short) 11, Main.SessionClosed.getDefaultInstance());
+        tmpMap.put((short) 12, Main.UserConnected.getDefaultInstance());
+        tmpMap.put((short) 13, Main.UserDisconnected.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

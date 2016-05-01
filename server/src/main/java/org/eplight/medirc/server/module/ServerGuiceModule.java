@@ -1,10 +1,13 @@
 package org.eplight.medirc.server.module;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
 import org.eplight.medirc.server.config.ConfigurationManager;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.network.NetworkManager;
+import org.eplight.medirc.server.session.active.ActiveSessionsManager;
+import org.eplight.medirc.server.user.Users;
 
 /**
  * Created by EpLightning on 28.04.2016.
@@ -30,5 +33,8 @@ public class ServerGuiceModule extends AbstractModule {
         bind(EventLoop.class).toInstance(loop);
         bind(MessageDispatcher.class).toInstance(dispatcher);
         bind(NetworkManager.class).toInstance(networkManager);
+
+        bind(Users.class).in(Scopes.SINGLETON);
+        bind(ActiveSessionsManager.class).in(Scopes.SINGLETON);
     }
 }

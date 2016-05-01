@@ -13,6 +13,7 @@ import org.eplight.medirc.server.event.queue.LinkedEventQueue;
 import org.eplight.medirc.server.module.ServerGuiceModule;
 import org.eplight.medirc.server.module.SimpleModuleManager;
 import org.eplight.medirc.server.module.auth.AuthModuleDefinition;
+import org.eplight.medirc.server.module.home.HomeModuleDefinition;
 import org.eplight.medirc.server.network.NetworkManager;
 import org.eplight.medirc.server.user.User;
 
@@ -54,6 +55,7 @@ public class ServerApplication {
                 network)));
 
         modules.register(new AuthModuleDefinition());
+        modules.register(new HomeModuleDefinition());
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

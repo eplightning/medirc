@@ -10,8 +10,15 @@ message Session {
     string name = 2;
     User owner = 3;
     uint32 users = 4;
-    bool isOwner = 5;
-    bool hasStarted = 6;
+    bool ownership = 5;
+
+    enum State {
+        SettingUp = 0;
+        Started = 1;
+        Finished = 2;
+    }
+
+    State state = 6;
 }
 
 // Obiekt użytkownika
@@ -58,4 +65,14 @@ message SessionInvite {
 // Serwer: Aktywna sesja została zamknięta i przeniesiona do archiwalnych
 message SessionClosed {
     Session session = 1;
+}
+
+// Serwer: Nowy użytkownik
+message UserConnected {
+    User user = 1;
+}
+
+// Serwer: Użytkownik odszedł
+message UserDisconnected {
+    User user = 1;
 }

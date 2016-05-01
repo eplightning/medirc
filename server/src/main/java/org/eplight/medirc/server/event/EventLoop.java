@@ -31,9 +31,13 @@ public class EventLoop {
         Event ev;
 
         while ((ev = this.queue.next()) != null) {
-            for (Consumer con : consumers) {
-                con.consume(ev);
-            }
+            fireEvent(ev);
+        }
+    }
+
+    public void fireEvent(Event ev) {
+        for (Consumer con : consumers) {
+            con.consume(ev);
         }
     }
 }
