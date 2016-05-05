@@ -13,12 +13,11 @@ import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.UserAuthedEvent;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
+import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 import org.eplight.medirc.server.user.Users;
 import org.eplight.medirc.server.user.auth.Authentication;
-import org.eplight.medirc.server.user.auth.HardcodedAuthentication;
-import org.eplight.medirc.server.user.factory.HardcodedUserFactory;
-import org.eplight.medirc.server.user.factory.UserFactory;
+import org.eplight.medirc.server.user.factory.UserRepository;
 
 import javax.inject.Inject;
 
@@ -35,16 +34,14 @@ public class AuthModule implements Module {
     @Inject
     protected Users users;
 
+    @Inject
     protected Authentication authenticator;
-    protected UserFactory userFactory;
 
-    public AuthModule() {
-        userFactory = new HardcodedUserFactory();
-        authenticator = new HardcodedAuthentication();
-    }
+    @Inject
+    protected UserRepository userRepository;
 
     public void onChannelInactive(ChannelInactiveEvent event) {
-        User usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
+        ActiveUser usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
 
         if (usr == null) {
             return;
@@ -59,7 +56,7 @@ public class AuthModule implements Module {
         Basic.HandshakeAck.Builder ack = Basic.HandshakeAck.newBuilder();
         ack.setSuccess(false);
 
-        Attribute<User> attribute = channel.attr(SocketAttributes.USER_OBJECT);
+        Attribute<ActiveUser> attribute = channel.attr(SocketAttributes.USER_OBJECT);
 
         if (attribute.get() != null) {
             ack.setErrorMessage("Authenticated user sent handshake request ..?");
@@ -77,7 +74,15 @@ public class AuthModule implements Module {
             return;
         }
 
-        User usr = userFactory.create(id);
+        // już zalogowany?
+        if (users.containsKey(id)) {
+            ack.setErrorMessage("Specified user is already logged in ...");
+            channel.writeAndFlush(ack.build());
+            logger.error("Authentication error, user already logged in");
+            return;
+        }
+
+        User usr = userRepository.create(id);
 
         if (usr == null) {
             ack.setErrorMessage("Internal server error");
@@ -86,9 +91,10 @@ public class AuthModule implements Module {
             return;
         }
 
-        attribute.set(usr);
-        usr.setChannel(channel);
-        users.put(id, usr);
+        ActiveUser activeUser = new ActiveUser(channel, usr);
+
+        attribute.set(activeUser);
+        users.put(id, activeUser);
 
         ack.setSuccess(true);
         ack.setName(usr.getName());
@@ -96,7 +102,7 @@ public class AuthModule implements Module {
 
         logger.info("User successfully logged in: " + usr.getName());
 
-        loop.fireEvent(new UserAuthedEvent(usr, channel));
+        loop.fireEvent(new UserAuthedEvent(activeUser));
     }
 
     @Override

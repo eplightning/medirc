@@ -29,6 +29,7 @@ public class MessageDispatcher implements Dispatcher {
         functions.add(func);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void dispatch(Event ev) {
         MessageEvent msgEvent = (MessageEvent) ev;

@@ -1,23 +1,18 @@
 package org.eplight.medirc.server.event.events;
 
-import io.netty.channel.socket.SocketChannel;
+import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 
 public class UserAuthedEvent implements Event {
 
-    private User usr;
-    private SocketChannel channel;
+    private ActiveUser usr;
 
-    public UserAuthedEvent(User usr, SocketChannel channel) {
+    public UserAuthedEvent(ActiveUser usr) {
         this.usr = usr;
-        this.channel = channel;
     }
 
     public User getUser() {
         return usr;
     }
 
-    public SocketChannel getChannel() {
-        return channel;
-    }
 }

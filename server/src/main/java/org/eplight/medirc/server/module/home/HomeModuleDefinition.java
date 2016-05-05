@@ -6,7 +6,7 @@ public class HomeModuleDefinition implements ModuleDefinition {
 
     @Override
     public String getName() {
-        return "Obsługa głównego okna";
+        return "Main window support";
     }
 
     @Override

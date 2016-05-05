@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.server.event.dispatchers.function.DispatchFunction;
 import org.eplight.medirc.server.event.events.MessageEvent;
 import org.eplight.medirc.server.network.SocketAttributes;
+import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 
 public class AuthedMessageFunction<T extends Message> implements DispatchFunction<MessageEvent> {
@@ -16,7 +17,7 @@ public class AuthedMessageFunction<T extends Message> implements DispatchFunctio
 
     public interface Handler<T extends Message> {
 
-        void handleMessage(User user, T msg);
+        void handleMessage(ActiveUser user, T msg);
     }
 
     public AuthedMessageFunction(Handler<T> handler) {
@@ -27,7 +28,7 @@ public class AuthedMessageFunction<T extends Message> implements DispatchFunctio
     @SuppressWarnings("unchecked")
     @Override
     public void handleEvent(MessageEvent event) {
-        User usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
+        ActiveUser usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
 
         if (usr == null) {
             logger.info("Unauthenticated client sent message requiring authentication");

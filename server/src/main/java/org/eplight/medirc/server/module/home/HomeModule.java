@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.module.home;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
@@ -9,13 +11,20 @@ import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.UserAuthedEvent;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
+import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
+import org.eplight.medirc.server.session.repository.SessionRepository;
+import org.eplight.medirc.server.session.repository.SessionRepositoryException;
+import org.eplight.medirc.server.user.AbstractUser;
+import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 import org.eplight.medirc.server.user.Users;
 
 import javax.inject.Inject;
 
 public class HomeModule implements Module {
+
+    private static final Logger logger = LogManager.getLogger(HomeModule.class);
 
     @Inject
     protected ActiveSessionsManager activeSessions;
@@ -27,10 +36,13 @@ public class HomeModule implements Module {
     protected MessageDispatcher dispatcher;
 
     @Inject
+    protected SessionRepository repo;
+
+    @Inject
     protected Users users;
 
     public void onChannelInactive(ChannelInactiveEvent event) {
-        User usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
+        ActiveUser usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
 
         if (usr == null) {
             return;
@@ -51,8 +63,16 @@ public class HomeModule implements Module {
         users.broadcast(msg, ev.getUser());
     }
 
-    public void onSyncRequest(User usr, Main.SyncRequest msg) {
-        // TODO: Active sessions
+    public void onSyncRequest(ActiveUser usr, Main.SyncRequest msg) {
+        logger.info("User `" + usr.getName() + "` sent synchronization request");
+
+        // aktywne sesje
+        Main.ActiveSessions.Builder msg1 = Main.ActiveSessions.newBuilder();
+
+        for (Session s : activeSessions.findForUser(usr)) {
+            msg1.addSession(s.buildMessage(usr));
+        }
+
         // TODO: Archived sessions
 
         // użytkownicy
@@ -64,12 +84,38 @@ public class HomeModule implements Module {
             }
         }
 
+        usr.getChannel().write(msg1.build());
         usr.getChannel().write(msg3.build());
         usr.getChannel().flush();
     }
 
-    public void onCreateNewSession(User usr, Main.CreateNewSession msg) {
-        // TODO: Do it
+    public void onCreateNewSession(ActiveUser usr, Main.CreateNewSession msg) {
+        logger.info("User `" + usr.getName() + "` creating new session");
+        Main.NewSessionResponse.Builder response = Main.NewSessionResponse.newBuilder();
+
+        if (msg.getName().isEmpty()) {
+            response.setCreated(false);
+            response.setError("Nieprawidłowa nazwa");
+            return;
+        }
+
+        Session s = repo.create(msg.getName(), usr);
+
+        try {
+            repo.persist(s);
+        } catch (SessionRepositoryException e) {
+            response.setCreated(false);
+            response.setError("Błąd serwera: " + e.getMessage());
+            usr.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        activeSessions.addSession(s);
+
+        logger.info("User `" + usr.getName() + "` created new session: " + s.getName());
+
+        response.setCreated(true);
+        usr.getChannel().writeAndFlush(response.build());
     }
 
     @Override

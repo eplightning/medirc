@@ -5,6 +5,6 @@ package org.eplight.medirc.server.module;
  */
 public interface ModuleDefinition {
 
-    public String getName();
-    public Class getModuleClass();
+    String getName();
+    Class getModuleClass();
 }
