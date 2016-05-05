@@ -35,7 +35,7 @@ public class ServerApplication {
             ServerApplication app = new ServerApplication(argv);
             app.run();
         } catch (Exception e) {
-            logger.error(e);
+            logger.error("Uncaught exception thrown", e);
         }
     }
 
@@ -57,12 +57,7 @@ public class ServerApplication {
         modules.register(new AuthModuleDefinition());
         modules.register(new HomeModuleDefinition());
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                shutdown();
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 
         logger.info("Application initialized");
     }
