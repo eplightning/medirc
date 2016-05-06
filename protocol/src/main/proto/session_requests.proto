@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+import "session_basic.proto";
+
+// Prośba o dołączenie do sesji
+message JoinRequest {
+    uint32 id = 1;
+}
+
+// Informacja o wyjściu z sesji
+// bez odpowiedzi serwera
+message PartRequest {
+    uint32 id = 1;
+}
+
+//
+// Administracyjne
+//
+// Zmiana ustawień sesji
+message ChangeSettings {
+    uint32 sessionId = 1;
+    SessionData data = 2;
+}
+
+// Wysłanie zaproszenia (czyli narazie dodanie do listy uczsetników)
+message InviteUser {
+    uint32 sessionId = 1;
+    uint32 userId = 2; // userId, userName <- tylko jedno wymagane, priorytet ma userId
+    string userName = 3;
+}
+
+// Wyrzucenie użytkownika z sesji
+message KickUser {
+    uint32 sessionId = 1;
+    uint32 userId = 2;
+}
+
+// Zmiana flag użytkownika (narazie bez użytku)
+message ChangeUserFlags {
+    uint32 sessionId = 1;
+    uint32 userId = 2;
+    int32 flags = 3;
+}
+
+// Wrzucenie obrazka
+message UploadImage {
+    uint32 sessionId = 1;
+    string name = 2;
+    bytes data = 3;
+}
+
+// Usunięcie obrazka
+message RemoveImage {
+    uint32 id = 1;
+}
+
+//
+// Czat
+//
+
+// wysłanie wiadomości
+// bez odpowiedzi serwera
+message SendMessage {
+    uint32 sessionId = 1;
+    string text = 2;
+}
+
+//
+// Obrazki
+//
+
+message RequestImage {
+    uint32 id = 1;
+}

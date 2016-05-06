@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+import "session_basic.proto";
+
+//
+// Wiadomości
+//
+// Wiadomość normalnego użytkownika sesji
+message UserMessage {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+    string text = 3;
+}
+
+// Wiadomość od serwera (bez użytkownikowa)
+message ServerMessage {
+    uint32 sessionId = 1;
+    string text = 2;
+}
+
+//
+// Użytkownicy
+//
+// Dołączył
+message Joined {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+}
+
+// Odszedł
+message Parted {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+    string reason = 3;
+}
+
+// Nowy uczestnik (serwer wysle w chwili obecnej od razu po zaproszeniu)
+message NewParticipant {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+}
+
+// Uczestnik wyproszony
+// JESLI BYL JUZ W SESJI TO SERWER DOSLE JESZCZE Parted
+message Kicked {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+}
+
+// Zmiany uzytkownika (najpewniej flagi)
+message UserUpdated {
+    uint32 sessionId = 1;
+    SessionUser user = 2;
+}
+
+// TODO: Zaproszenia w nastepnym "sprincie"
+
+//
+// Inne
+//
+
+// Obrazek dodany do sesji (trzeba pobrac osobno, patrz requesty)
+message ImageAdded {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+    string name = 3;
+}
+
+// Obrazek usuniety
+message ImageRemoved {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+}
+
+// Zmiana ustawien sesji
+message SettingsChanged {
+    uint32 sessionId = 1;
+    SessionData data = 2;
+}

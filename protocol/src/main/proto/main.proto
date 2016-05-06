@@ -57,13 +57,19 @@ message NewSessionResponse {
     string error = 2;
 }
 
-// Serwer: Zostałeś zaproszony do nowej sesji
+// TODO: Dodać rzeczy od zaproszeń
+// Serwer: Zostałeś dodany jako uczestnik do sesji
 message SessionInvite {
     Session session = 1;
 }
 
 // Serwer: Aktywna sesja została zamknięta i przeniesiona do archiwalnych
 message SessionClosed {
+    Session session = 1;
+}
+
+// Klient: Wyrzucony z sesji
+message SessionKicked {
     Session session = 1;
 }
 
@@ -75,4 +81,14 @@ message UserConnected {
 // Serwer: Użytkownik odszedł
 message UserDisconnected {
     User user = 1;
+}
+
+// Klient: Podpowiedź nazwy użytkownika
+message UserAutocomplete {
+    string name = 1;
+}
+
+// Serwer: Odpowiedź na prośbe o podpowiedź
+message UserAutocompleteResponse {
+    repeated User user = 1;
 }

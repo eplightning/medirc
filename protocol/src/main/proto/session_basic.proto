@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+import "main.proto";
+
+// użytkownik w sesji
+message SessionUser {
+    uint32 id = 1;
+    string name = 2;
+    int32 flags = 3;
+}
+
+// ustawienia sesji
+message SessionData {
+    string name = 1;
+    Session.State state = 2;
+}
+
+// zdefiniowane flagi
+enum UserFlags {
+    None = 0; // Domyslna bo protobuf chce
+    Owner = 1; // właściciel sesji, nie zmienny
+    Operator = 2; // narazie bez wpływu
+    Voice = 4; // prawo do manipulacji obrazkami
+}
+

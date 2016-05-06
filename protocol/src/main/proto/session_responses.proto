@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+import "session_basic.proto";
+
+// Generyczny typ z tym czy zapytanie sie powiodlo i z ewentualnym bledem
+message GenericResponse {
+    uint32 sessionId = 1;
+    bool success = 2;
+    string error = 3;
+}
+
+message JoinResponse {
+    GenericResponse status = 1;
+
+    // tylko jeśli sukces
+    SessionData data = 2;
+    repeated SessionUser activeUser = 3;
+    repeated SessionUser participant = 4;
+    repeated uint32 image = 5;
+    // TODO: Zaproszenia?
+}
+
+message ChangeSettingsResponse {
+    GenericResponse status = 1;
+}
+
+message InviteUserResponse {
+    GenericResponse status = 1;
+
+    // tylko jeśli sukces
+    SessionUser user = 2;
+}
+
+message KickUserResponse {
+    GenericResponse status = 1;
+}
+
+message ChangeUserFlagsResponse {
+    GenericResponse status = 1;
+}
+
+message UploadImageResponse {
+    GenericResponse status = 1;
+
+    // tylko jeśli sukces
+    uint32 id = 2;
+}
+
+message RemoveImageResponse {
+    GenericResponse status = 1;
+}
+
+message RequestImageResponse {
+    GenericResponse status = 1;
+
+    // tylko jeśli sukces
+    uint32 id = 2;
+    string name = 3;
+    bytes data = 4;
+}
