@@ -15,7 +15,6 @@ import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.session.repository.SessionRepository;
 import org.eplight.medirc.server.session.repository.SessionRepositoryException;
-import org.eplight.medirc.server.user.AbstractUser;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 import org.eplight.medirc.server.user.Users;
@@ -118,6 +117,23 @@ public class HomeModule implements Module {
         usr.getChannel().writeAndFlush(response.build());
     }
 
+    private void onUserAutocomplete(ActiveUser usr, Main.UserAutocomplete msg) {
+        if (msg.getName().isEmpty() || msg.getName().length() < 1) {
+            return;
+        }
+
+        Main.UserAutocompleteResponse.Builder response = Main.UserAutocompleteResponse.newBuilder();
+
+        // max 5 użytkowników zaczynających się od podanego ciągu znaków
+        users.values().stream()
+                .filter(a -> a.getName().startsWith(msg.getName()))
+                .filter(a -> !a.equals(usr))
+                .limit(5)
+                .forEach(a -> response.addUser(a.buildUserMessage()));
+
+        usr.getChannel().writeAndFlush(response.build());
+    }
+
     @Override
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChannelInactiveEvent.class, this::onChannelInactive));
@@ -125,6 +141,7 @@ public class HomeModule implements Module {
 
         dispatcher.register(Main.SyncRequest.class, new AuthedMessageFunction<>(this::onSyncRequest));
         dispatcher.register(Main.CreateNewSession.class, new AuthedMessageFunction<>(this::onCreateNewSession));
+        dispatcher.register(Main.UserAutocomplete.class, new AuthedMessageFunction<>(this::onUserAutocomplete));
     }
 
     @Override

@@ -2,6 +2,10 @@ package org.eplight.medirc.server.user;
 
 import io.netty.channel.socket.SocketChannel;
 import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionBasic;
+import org.eplight.medirc.server.session.SessionUserFlag;
+
+import java.util.EnumSet;
 
 public class ActiveUser implements User {
 
@@ -20,6 +24,11 @@ public class ActiveUser implements User {
     @Override
     public Main.User buildUserMessage() {
         return user.buildUserMessage();
+    }
+
+    @Override
+    public SessionBasic.SessionUser buildSessionUserMessage(EnumSet<SessionUserFlag> flags) {
+        return user.buildSessionUserMessage(flags);
     }
 
     @Override

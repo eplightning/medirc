@@ -14,17 +14,19 @@ public class NullSessionRepository implements SessionRepository {
     @Inject
     private UserRepository userRepository;
 
+    private int lastId = 1;
+
     @Override
     public Session create(String name, User owner) {
-        return new MemorySession(name, owner);
+        return new MemorySession(lastId++, name, owner);
     }
 
     @Override
     public Set<Session> findActive() {
         HashSet<Session> sessions = new HashSet<>();
 
-        sessions.add(create("Testowa sesja", userRepository.create(1)));
-        sessions.add(create("Testowa sesja 2", userRepository.create(2)));
+        sessions.add(create("Testowa sesja", userRepository.findById(1)));
+        sessions.add(create("Testowa sesja 2", userRepository.findById(2)));
 
         return sessions;
     }

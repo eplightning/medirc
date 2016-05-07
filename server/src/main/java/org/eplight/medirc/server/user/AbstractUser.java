@@ -1,6 +1,10 @@
 package org.eplight.medirc.server.user;
 
 import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionBasic;
+import org.eplight.medirc.server.session.SessionUserFlag;
+
+import java.util.EnumSet;
 
 public class AbstractUser implements User {
 
@@ -17,6 +21,15 @@ public class AbstractUser implements User {
         return Main.User.newBuilder()
                 .setId(getId())
                 .setName(getName())
+                .build();
+    }
+
+    @Override
+    public SessionBasic.SessionUser buildSessionUserMessage(EnumSet<SessionUserFlag> flags) {
+        return SessionBasic.SessionUser.newBuilder()
+                .setId(getId())
+                .setName(getName())
+                .setFlags(SessionUserFlag.toProtobuf(flags))
                 .build();
     }
 

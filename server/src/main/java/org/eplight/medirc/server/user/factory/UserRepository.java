@@ -1,6 +1,5 @@
 package org.eplight.medirc.server.user.factory;
 
-import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 
 /**
@@ -8,5 +7,6 @@ import org.eplight.medirc.server.user.User;
  */
 public interface UserRepository {
 
-    User create(int id);
+    User findById(int id);
+    User findByName(String name);
 }

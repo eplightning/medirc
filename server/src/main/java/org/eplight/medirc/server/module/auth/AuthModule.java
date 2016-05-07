@@ -82,7 +82,7 @@ public class AuthModule implements Module {
             return;
         }
 
-        User usr = userRepository.create(id);
+        User usr = userRepository.findById(id);
 
         if (usr == null) {
             ack.setErrorMessage("Internal server error");

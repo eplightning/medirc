@@ -14,10 +14,9 @@ import org.eplight.medirc.server.module.ServerGuiceModule;
 import org.eplight.medirc.server.module.SimpleModuleManager;
 import org.eplight.medirc.server.module.auth.AuthModuleDefinition;
 import org.eplight.medirc.server.module.home.HomeModuleDefinition;
+import org.eplight.medirc.server.module.sessionhandleruser.SessionHandlerUserDefinition;
+import org.eplight.medirc.server.module.sessioninput.SessionInputDefinition;
 import org.eplight.medirc.server.network.NetworkManager;
-import org.eplight.medirc.server.user.User;
-
-import java.util.Map;
 
 public class ServerApplication {
 
@@ -27,7 +26,6 @@ public class ServerApplication {
     protected NetworkManager network;
     protected EventLoop loop;
     protected MessageDispatcher messageDispatcher;
-    protected Map<Integer, User> users;
     protected SimpleModuleManager modules;
 
     static public void main(String[] argv) {
@@ -56,6 +54,8 @@ public class ServerApplication {
 
         modules.register(new AuthModuleDefinition());
         modules.register(new HomeModuleDefinition());
+        modules.register(new SessionInputDefinition());
+        modules.register(new SessionHandlerUserDefinition());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 

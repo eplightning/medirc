@@ -13,6 +13,17 @@ public enum SessionState {
         this.protobuf = protobuf;
     }
 
+    public static SessionState fromProtobuf(Main.Session.State state) {
+        switch (state) {
+            case Finished:
+                return Finished;
+            case Started:
+                return Started;
+            default:
+                return SettingUp;
+        }
+    }
+
     public Main.Session.State toProtobuf() {
         return protobuf;
     }
