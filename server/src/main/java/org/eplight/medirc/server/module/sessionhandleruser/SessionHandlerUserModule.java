@@ -52,6 +52,8 @@ public class SessionHandlerUserModule implements Module {
         Session sess = ev.getSession();
         User invited = ev.getInvitedUser();
 
+        logger.info("Inviting user `" + invited.getName() +"` to `" + sess.getName() + "`");
+
         // TODO: Prawdziwy system zaproszeń
         sess.invite(invited);
 
@@ -79,6 +81,8 @@ public class SessionHandlerUserModule implements Module {
         Session sess = ev.getSession();
         ActiveUser user = ev.getUser();
 
+        logger.info("User `" + user.getName() +"` joining `" + sess.getName() + "`");
+
         sess.join(user);
 
         SessionEvents.Joined.Builder msg = SessionEvents.Joined.newBuilder()
@@ -91,6 +95,8 @@ public class SessionHandlerUserModule implements Module {
     private void onKick(KickSessionEvent ev) {
         Session sess = ev.getSession();
         User user = ev.getKickedUser();
+
+        logger.info("Kicking `" + user.getName() +"` from `" + sess.getName() + "`");
 
         sess.kick(user);
 
@@ -118,6 +124,8 @@ public class SessionHandlerUserModule implements Module {
         User user = ev.getUser();
         String text = ev.getText();
 
+        logger.info("Message from `" + user.getName() +"` in `" + sess.getName() + "`");
+
         MessageOrBuilder msg;
 
         if (user == null) {
@@ -141,6 +149,8 @@ public class SessionHandlerUserModule implements Module {
         ActiveUser user = ev.getUser();
         String reason = ev.getReason();
 
+        logger.info("User `" + user.getName() +"` parting `" + sess.getName() + "`");
+
         sess.part(user);
 
         SessionEvents.Parted.Builder msg = SessionEvents.Parted.newBuilder()
@@ -154,6 +164,8 @@ public class SessionHandlerUserModule implements Module {
     private void onSettings(SettingsSessionEvent ev) {
         Session sess = ev.getSession();
         SessionBasic.SessionData data = ev.getData();
+
+        logger.info("Session configuration change: `" + sess.getName() + "`");
 
         boolean changes = false;
         SessionState oldState = sess.getState();
@@ -177,29 +189,41 @@ public class SessionHandlerUserModule implements Module {
 
         sess.broadcast(msg);
 
-        if (oldState != sess.getState()) {
-            Set<ActiveUser> affectedUsers = users.values().stream()
-                    .filter(a -> sess.getParticipants().contains(a) || sess.getOwner().equals(a))
-                    .collect(Collectors.toSet());
+        // session list update for participants
+        Set<ActiveUser> affectedUsers = users.values().stream()
+                .filter(a -> sess.getParticipants().contains(a))
+                .collect(Collectors.toSet());
 
-            if (sess.getState() == SessionState.Started) {
-                for (ActiveUser u : affectedUsers) {
-                    u.getChannel().writeAndFlush(
-                            Main.SessionInvite.newBuilder()
-                            .setSession(sess.buildMessage(u))
-                            .build()
-                    );
-                }
-            } else if (sess.getState() == SessionState.Finished) {
-                for (ActiveUser u : affectedUsers) {
-                    u.getChannel().writeAndFlush(
-                            Main.SessionClosed.newBuilder()
-                                    .setSession(sess.buildMessage(u))
-                                    .build()
-                    );
-                }
+        if (oldState == SessionState.SettingUp && sess.getState() == SessionState.Started) {
+            for (ActiveUser u : affectedUsers) {
+                u.getChannel().writeAndFlush(
+                        Main.SessionInvite.newBuilder()
+                        .setSession(sess.buildMessage(u))
+                        .build()
+                );
+            }
+        } else {
+            for (ActiveUser u : affectedUsers) {
+                u.getChannel().writeAndFlush(
+                        Main.SessionUpdated.newBuilder()
+                        .setSession(sess.buildMessage(u))
+                        .build()
+                );
             }
         }
+
+        // session list update for owner
+        ActiveUser owner = users.get(sess.getOwner().getId());
+
+        if (owner != null) {
+            owner.getChannel().writeAndFlush(
+                    Main.SessionUpdated.newBuilder()
+                    .setSession(sess.buildMessage(owner))
+                    .build()
+            );
+        }
+
+        // TODO: Handle moving active session to archived sessions container
     }
 
     @Override

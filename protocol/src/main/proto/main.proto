@@ -58,13 +58,13 @@ message NewSessionResponse {
 }
 
 // TODO: Dodać rzeczy od zaproszeń
-// Serwer: Zostałeś dodany jako uczestnik do sesji
+// Serwer: Nowa sesja na twojej liście
 message SessionInvite {
     Session session = 1;
 }
 
-// Serwer: Aktywna sesja została zamknięta i przeniesiona do archiwalnych
-message SessionClosed {
+// Serwer: Zmiana stanu sesji obecnej na twojej liście
+message SessionUpdated {
     Session session = 1;
 }
 

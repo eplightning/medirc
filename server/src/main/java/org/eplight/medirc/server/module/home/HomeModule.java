@@ -26,21 +26,21 @@ public class HomeModule implements Module {
     private static final Logger logger = LogManager.getLogger(HomeModule.class);
 
     @Inject
-    protected ActiveSessionsManager activeSessions;
+    private ActiveSessionsManager activeSessions;
 
     @Inject
-    protected EventLoop loop;
+    private EventLoop loop;
 
     @Inject
-    protected MessageDispatcher dispatcher;
+    private MessageDispatcher dispatcher;
 
     @Inject
-    protected SessionRepository repo;
+    private SessionRepository repo;
 
     @Inject
-    protected Users users;
+    private Users users;
 
-    public void onChannelInactive(ChannelInactiveEvent event) {
+    private void onChannelInactive(ChannelInactiveEvent event) {
         ActiveUser usr = event.getChannel().attr(SocketAttributes.USER_OBJECT).get();
 
         if (usr == null) {
@@ -54,7 +54,7 @@ public class HomeModule implements Module {
         users.broadcast(msg, usr);
     }
 
-    public void onUserAuthed(UserAuthedEvent ev) {
+    private void onUserAuthed(UserAuthedEvent ev) {
         // budowanie wiadomości ..
         Main.UserConnected msg = Main.UserConnected.newBuilder().setUser(ev.getUser().buildUserMessage()).build();
 
@@ -62,7 +62,7 @@ public class HomeModule implements Module {
         users.broadcast(msg, ev.getUser());
     }
 
-    public void onSyncRequest(ActiveUser usr, Main.SyncRequest msg) {
+    private void onSyncRequest(ActiveUser usr, Main.SyncRequest msg) {
         logger.info("User `" + usr.getName() + "` sent synchronization request");
 
         // aktywne sesje
@@ -88,7 +88,7 @@ public class HomeModule implements Module {
         usr.getChannel().flush();
     }
 
-    public void onCreateNewSession(ActiveUser usr, Main.CreateNewSession msg) {
+    private void onCreateNewSession(ActiveUser usr, Main.CreateNewSession msg) {
         logger.info("User `" + usr.getName() + "` creating new session");
         Main.NewSessionResponse.Builder response = Main.NewSessionResponse.newBuilder();
 
@@ -115,6 +115,12 @@ public class HomeModule implements Module {
 
         response.setCreated(true);
         usr.getChannel().writeAndFlush(response.build());
+
+        usr.getChannel().writeAndFlush(
+                Main.SessionInvite.newBuilder()
+                .setSession(s.buildMessage(usr))
+                .build()
+        );
     }
 
     private void onUserAutocomplete(ActiveUser usr, Main.UserAutocomplete msg) {
