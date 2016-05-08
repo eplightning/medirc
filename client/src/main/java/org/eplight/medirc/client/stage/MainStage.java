@@ -160,7 +160,7 @@ public class MainStage extends Stage {
     }
 
     private void userConnected(Main.UserConnected msg){
-
+        users.getItems().add(new User(msg.getUser()));
     }
 
     private void userDisconnected(Main.UserDisconnected msg){
@@ -168,7 +168,7 @@ public class MainStage extends Stage {
     }
 
     private void sessionInvite(Main.SessionInvite msg) {
-
+        activeSessions.getItems().add(new Session(msg.getSession()));
     }
 
     private void joinSession(Session session) {
