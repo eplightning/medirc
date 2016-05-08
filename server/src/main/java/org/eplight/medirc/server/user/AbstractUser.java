@@ -2,7 +2,7 @@ package org.eplight.medirc.server.user;
 
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionBasic;
-import org.eplight.medirc.server.session.SessionUserFlag;
+import org.eplight.medirc.protocol.SessionUserFlag;
 
 import java.util.EnumSet;
 

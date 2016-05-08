@@ -3,7 +3,7 @@ package org.eplight.medirc.server.user;
 import io.netty.channel.socket.SocketChannel;
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionBasic;
-import org.eplight.medirc.server.session.SessionUserFlag;
+import org.eplight.medirc.protocol.SessionUserFlag;
 
 import java.util.EnumSet;
 
@@ -44,5 +44,20 @@ public class ActiveUser implements User {
     @Override
     public int getId() {
         return user.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof User)) return false;
+
+        User user = (User) o;
+
+        return getId() == user.getId();
     }
 }

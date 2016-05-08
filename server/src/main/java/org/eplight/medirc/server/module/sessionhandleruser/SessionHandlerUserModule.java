@@ -13,6 +13,7 @@ import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.SessionState;
+import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 import org.eplight.medirc.server.user.Users;
@@ -33,6 +34,9 @@ public class SessionHandlerUserModule implements Module {
 
     @Inject
     private Users users;
+
+    @Inject
+    private ActiveSessionsManager activeSessionsManager;
 
     private void onChangeFlags(ChangeFlagsSessionEvent ev) {
         Session sess = ev.getSession();
@@ -225,6 +229,9 @@ public class SessionHandlerUserModule implements Module {
         }
 
         // TODO: Handle moving active session to archived sessions container
+        if (oldState == SessionState.Started && sess.getState() == SessionState.Finished) {
+            activeSessionsManager.removeSession(sess.getId());
+        }
     }
 
     private void onUploadImage(UploadImageSessionEvent ev) {

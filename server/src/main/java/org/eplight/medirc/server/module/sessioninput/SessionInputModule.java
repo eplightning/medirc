@@ -18,7 +18,7 @@ import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.SessionState;
-import org.eplight.medirc.server.session.SessionUserFlag;
+import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
@@ -111,6 +111,7 @@ public class SessionInputModule implements Module {
 
         response.setStatus(statusSuccess(msg.getId()));
         response.setData(sess.buildDataMessage());
+        response.setYourFlags(SessionUserFlag.toProtobuf(sess.getFlags(user)));
 
         sess.getActiveUsers().stream()
                 .forEach(a -> response.addActiveUser(a.buildSessionUserMessage(sess.getFlags(a))));
@@ -162,7 +163,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;
@@ -212,7 +213,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;
@@ -267,7 +268,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;
@@ -315,7 +316,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;
@@ -366,7 +367,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;
@@ -431,7 +432,7 @@ public class SessionInputModule implements Module {
         }
 
         // uprawnienia
-        if (sess.isAdmin(user)) {
+        if (!sess.isAdmin(user)) {
             response.setStatus(statusError(img.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
             user.getChannel().writeAndFlush(response.build());
             return;

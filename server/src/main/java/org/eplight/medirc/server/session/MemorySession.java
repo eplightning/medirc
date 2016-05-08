@@ -1,5 +1,6 @@
 package org.eplight.medirc.server.session;
 
+import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 

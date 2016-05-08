@@ -43,4 +43,8 @@ public class ActiveSessionsManager {
     public Session findById(int id) {
         return sessions.get(id);
     }
+
+    public void removeSession(int id) {
+        sessions.remove(id);
+    }
 }

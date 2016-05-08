@@ -18,9 +18,10 @@ message JoinResponse {
 
     // tylko jeśli sukces
     SessionData data = 2;
-    repeated SessionUser activeUser = 3;
-    repeated SessionUser participant = 4;
-    repeated uint32 image = 5;
+    int32 yourFlags = 3;
+    repeated SessionUser activeUser = 4;
+    repeated SessionUser participant = 5;
+    repeated uint32 image = 6;
     // TODO: Zaproszenia?
 }
 

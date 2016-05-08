@@ -3,6 +3,7 @@ package org.eplight.medirc.server.session;
 import com.google.protobuf.MessageOrBuilder;
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionBasic;
+import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
 

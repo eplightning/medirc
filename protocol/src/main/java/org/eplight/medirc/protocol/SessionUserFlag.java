@@ -1,6 +1,4 @@
-package org.eplight.medirc.server.session;
-
-import org.eplight.medirc.protocol.SessionBasic;
+package org.eplight.medirc.protocol;
 
 import java.util.EnumSet;
 
