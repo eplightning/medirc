@@ -9,6 +9,7 @@ import org.eplight.medirc.protocol.SessionEvents;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.events.session.*;
+import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.SessionState;
@@ -226,6 +227,35 @@ public class SessionHandlerUserModule implements Module {
         // TODO: Handle moving active session to archived sessions container
     }
 
+    private void onUploadImage(UploadImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image uploaded: `" + sess.getName() + "`");
+
+        SessionEvents.ImageAdded msg = SessionEvents.ImageAdded.newBuilder()
+                .setSessionId(sess.getId())
+                .setName(img.getName())
+                .setId(img.getId())
+                .build();
+
+        sess.broadcast(msg);
+    }
+
+    private void onRemoveImage(RemoveImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image removed: `" + sess.getName() + "`");
+
+        SessionEvents.ImageRemoved msg = SessionEvents.ImageRemoved.newBuilder()
+                .setSessionId(sess.getId())
+                .setId(img.getId())
+                .build();
+
+        sess.broadcast(msg);
+    }
+
     @Override
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChangeFlagsSessionEvent.class, this::onChangeFlags));
@@ -235,6 +265,8 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(MessageSessionEvent.class, this::onMessage));
         loop.registerConsumer(new FunctionConsumer<>(PartSessionEvent.class, this::onPart));
         loop.registerConsumer(new FunctionConsumer<>(SettingsSessionEvent.class, this::onSettings));
+        loop.registerConsumer(new FunctionConsumer<>(UploadImageSessionEvent.class, this::onUploadImage));
+        loop.registerConsumer(new FunctionConsumer<>(RemoveImageSessionEvent.class, this::onRemoveImage));
     }
 
     @Override

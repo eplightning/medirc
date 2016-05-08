@@ -5,6 +5,9 @@ import com.google.inject.Scopes;
 import org.eplight.medirc.server.config.ConfigurationManager;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
+import org.eplight.medirc.server.image.ImageManager;
+import org.eplight.medirc.server.image.repo.ImageRepository;
+import org.eplight.medirc.server.image.repo.NullImageRepository;
 import org.eplight.medirc.server.network.NetworkManager;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.session.repository.NullSessionRepository;
@@ -45,5 +48,7 @@ public class ServerGuiceModule extends AbstractModule {
         bind(SessionRepository.class).to(NullSessionRepository.class).in(Scopes.SINGLETON);
         bind(Authentication.class).to(HardcodedAuthentication.class).in(Scopes.SINGLETON);
         bind(UserRepository.class).to(HardcodedUserRepository.class).in(Scopes.SINGLETON);
+        bind(ImageRepository.class).to(NullImageRepository.class).in(Scopes.SINGLETON);
+        bind(ImageManager.class).in(Scopes.SINGLETON);
     }
 }

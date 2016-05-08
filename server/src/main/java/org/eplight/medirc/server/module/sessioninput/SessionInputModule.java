@@ -1,5 +1,6 @@
 package org.eplight.medirc.server.module.sessioninput;
 
+import com.google.protobuf.ByteString;
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionRequests;
 import org.eplight.medirc.protocol.SessionResponses;
@@ -9,6 +10,10 @@ import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.event.dispatchers.function.message.AuthedMessageFunction;
 import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.session.*;
+import org.eplight.medirc.server.image.Image;
+import org.eplight.medirc.server.image.ImageManager;
+import org.eplight.medirc.server.image.repo.ImageRepository;
+import org.eplight.medirc.server.image.repo.ImageRepositoryException;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
@@ -20,6 +25,7 @@ import org.eplight.medirc.server.user.User;
 import org.eplight.medirc.server.user.factory.UserRepository;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -36,6 +42,12 @@ public class SessionInputModule implements Module {
 
     @Inject
     private ActiveSessionsManager sessions;
+
+    @Inject
+    private ImageManager imageManager;
+
+    @Inject
+    private ImageRepository imageRepository;
 
     @Inject
     private UserRepository userRepository;
@@ -106,7 +118,8 @@ public class SessionInputModule implements Module {
         sess.getParticipants().stream()
                 .forEach(a -> response.addParticipant(a.buildSessionUserMessage(sess.getFlags(a))));
 
-        // TODO: Images
+        imageManager.getSessionImages(sess).stream()
+                .forEach(a -> response.addImage(a.getId()));
 
         user.getChannel().writeAndFlush(response.build());
 
@@ -341,7 +354,6 @@ public class SessionInputModule implements Module {
     }
 
     private void onUploadImage(ActiveUser user, SessionRequests.UploadImage msg) {
-        // TODO:
         SessionResponses.UploadImageResponse.Builder response = SessionResponses.UploadImageResponse.newBuilder();
 
         Session sess = sessions.findById(msg.getSessionId());
@@ -353,13 +365,93 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        response.setStatus(statusError(msg.getSessionId(), "Brak implementacji"));
+        // uprawnienia
+        if (sess.isAdmin(user)) {
+            response.setStatus(statusError(msg.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // zakończona
+        if (sess.getState() == SessionState.Finished) {
+            response.setStatus(statusError(msg.getSessionId(), "Sesja jest już zakończona"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        if (msg.getName().isEmpty() || msg.getData().isEmpty()) {
+            response.setStatus(statusError(msg.getSessionId(), "Brak danych"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        Image img = imageRepository.create(sess.getId());
+
+        try {
+            img.importImage(msg.getData().toByteArray());
+            img.setName(msg.getName());
+
+            imageRepository.persist(img);
+            imageManager.addImage(img);
+        } catch (IOException e) {
+            response.setStatus(statusError(msg.getSessionId(), "Nieprawidłowy format obrazka"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        } catch (ImageRepositoryException e) {
+            response.setStatus(statusError(msg.getSessionId(), "Błąd wewnętrzny serwera"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        response.setStatus(statusSuccess(sess.getId())).setId(img.getId());
 
         user.getChannel().writeAndFlush(response.build());
+
+        loop.fireEvent(new UploadImageSessionEvent(sess, user, img));
     }
 
     private void onRemoveImage(ActiveUser user, SessionRequests.RemoveImage msg) {
-        // TODO:
+        SessionResponses.RemoveImageResponse.Builder response = SessionResponses.RemoveImageResponse.newBuilder();
+
+        if (msg.getId() <= 0)
+            return;
+
+        Image img = imageManager.getImage(msg.getId());
+
+        if (img == null)
+            return;
+
+        Session sess = sessions.findById(img.getSessionId());
+
+        // not found
+        if (sess == null) {
+            response.setStatus(statusError(img.getSessionId(), "Nie udało się znaleźć sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // uprawnienia
+        if (sess.isAdmin(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Nie masz uprawnień do zmiany ustawień"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // zakończona
+        if (sess.getState() == SessionState.Finished) {
+            response.setStatus(statusError(img.getSessionId(), "Sesja jest już zakończona"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        imageManager.removeImage(img);
+        imageRepository.remove(img);
+
+        response.setStatus(statusSuccess(sess.getId()));
+
+        user.getChannel().writeAndFlush(response.build());
+
+        loop.fireEvent(new RemoveImageSessionEvent(sess, user, img));
     }
 
     private void onSendMessage(ActiveUser user, SessionRequests.SendMessage msg) {
@@ -381,7 +473,38 @@ public class SessionInputModule implements Module {
     }
 
     private void onRequestImage(ActiveUser user, SessionRequests.RequestImage msg) {
-        // TODO:
+        SessionResponses.RequestImageResponse.Builder response = SessionResponses.RequestImageResponse.newBuilder();
+
+        if (msg.getId() <= 0)
+            return;
+
+        Image img = imageManager.getImage(msg.getId());
+
+        if (img == null)
+            return;
+
+        Session sess = sessions.findById(img.getSessionId());
+
+        // not found
+        if (sess == null) {
+            response.setStatus(statusError(img.getSessionId(), "Nie udało się znaleźć sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // active?
+        if (!sess.getActiveUsers().contains(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Musisz być aktywnym użytkownikiem sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        response.setId(img.getId())
+                .setData(ByteString.copyFrom(img.getData()))
+                .setName(img.getName())
+                .setStatus(statusSuccess(sess.getId()));
+
+        user.getChannel().writeAndFlush(response.build());
     }
 
     @Override
