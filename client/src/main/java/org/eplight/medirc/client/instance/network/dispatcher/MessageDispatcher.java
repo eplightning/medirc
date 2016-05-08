@@ -11,6 +11,16 @@ public class MessageDispatcher {
 
     private Map<Class, List<DispatchFunction>> routing = new HashMap<>();
 
+    private List<MessageDispatcher> children = new ArrayList<>();
+
+    public void addChildDispatcher(MessageDispatcher dispatcher) {
+        children.add(dispatcher);
+    }
+
+    public void removeChildDispatcher(MessageDispatcher dispatcher) {
+        children.remove(dispatcher);
+    }
+
     @SuppressWarnings("unchecked")
     public void dispatch(Message msg) {
         List<DispatchFunction> functions = routing.get(msg.getClass());
@@ -20,6 +30,8 @@ public class MessageDispatcher {
                 func.handle(msg);
             }
         }
+
+        children.forEach(a -> a.dispatch(msg));
     }
 
     public void register(Class<? extends Message> klazz, DispatchFunction func) {

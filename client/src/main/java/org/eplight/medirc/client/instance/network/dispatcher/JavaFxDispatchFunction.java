@@ -1,7 +1,5 @@
 package org.eplight.medirc.client.instance.network.dispatcher;
 
-import javafx.application.Platform;
-
 public class JavaFxDispatchFunction<T> implements DispatchFunction<T> {
 
     private DispatchFunction<T> dispatchFunction;
@@ -12,6 +10,8 @@ public class JavaFxDispatchFunction<T> implements DispatchFunction<T> {
 
     @Override
     public void handle(T msg) {
-        Platform.runLater(() -> dispatchFunction.handle(msg));
+        // TODO: Do wywalenia cała klasa teraz ..
+        dispatchFunction.handle(msg);
+        //Platform.runLater(() -> dispatchFunction.handle(msg));
     }
 }

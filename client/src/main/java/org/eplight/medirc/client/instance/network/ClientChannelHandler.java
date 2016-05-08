@@ -35,7 +35,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
         lastActivity.set(System.currentTimeMillis());
 
-        dispatcher.dispatch((Message) obj);
+        Platform.runLater(() -> dispatcher.dispatch((Message) obj));
     }
 
     @Override

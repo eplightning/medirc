@@ -25,4 +25,8 @@ public class Session {
     public boolean isStarted() {
         return sessionMsg.getState() == Main.Session.State.Started;
     }
+
+    public int getId() {
+        return sessionMsg.getId();
+    }
 }
