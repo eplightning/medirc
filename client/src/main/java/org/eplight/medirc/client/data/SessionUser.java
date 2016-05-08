@@ -40,4 +40,21 @@ public class SessionUser {
     public String toString() {
         return name;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+
+        if (!(obj instanceof SessionUser)) return false;
+
+        SessionUser that = (SessionUser) obj;
+
+        return that.getId() == getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return getId();
+    }
 }
