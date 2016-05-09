@@ -27,7 +27,7 @@
                <children>
                   <ToolBar prefHeight="40.0" prefWidth="200.0">
                     <items>
-                      <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Ustawienia" />
+                      <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Dodaj zdjęcie" />
                         <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Zaproś" />
                         <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Rozpocznij sesję" />
                     </items>

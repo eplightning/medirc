@@ -19,9 +19,11 @@ public class ImageManager {
     private HashMap<Integer, Image> images = new HashMap<>();
 
     public void addImage(Image img) {
-        Set<Image> images = getSessionImages(img.getSessionId());
+        Set<Image> set = getSessionImages(img.getSessionId());
 
-        images.add(img);
+        set.add(img);
+
+        images.put(img.getId(), img);
     }
 
     public Set<Image> getSessionImages(Session session) {

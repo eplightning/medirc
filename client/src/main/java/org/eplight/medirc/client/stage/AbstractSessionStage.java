@@ -9,12 +9,20 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
+import org.eplight.medirc.client.components.session.ImageCell;
+import org.eplight.medirc.client.data.SessionImage;
 import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.protocol.Main;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -54,6 +62,9 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ScrollPane chatScroll;
 
+    @FXML
+    private ListView<SessionImage> imageList;
+
     private ContextMenu activeUserContext;
     private ContextMenu participantContext;
 
@@ -76,6 +87,8 @@ abstract public class AbstractSessionStage extends Stage {
         setTitle("Sesja - " + sessionName + " (Użytkownik: " + handshakeAck.getName() + ")");
         setWidth(1024);
         setHeight(742);
+
+        imageList.setCellFactory(sessionImageListView -> new ImageCell(sessionImageListView));
 
         setOnCloseRequest(this::onCloseRequest);
 
@@ -161,6 +174,10 @@ abstract public class AbstractSessionStage extends Stage {
         addMessage(null, user.getName() + " został wyrzucony z sesji");
     }
 
+    protected void addImageInfo(String info) {
+        addMessage(null, "Zdjęcie " + info + " zostało dodane");
+    }
+
     protected void addMessage(SessionUser user, String msg) {
         double size = Font.getDefault().getSize();
         Text userText = null;
@@ -225,6 +242,34 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private void onSettingsButton(ActionEvent event) {
         // TODO:
+        FileChooser chooser = new FileChooser();
+
+        File file = chooser.showOpenDialog(this);
+
+        if (file != null) {
+            byte[] data;
+
+            try {
+                BufferedImage img = ImageIO.read(file);
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+                ImageIO.write(img, "png", stream);
+
+                data = stream.toByteArray();
+                onUploadImage(data, file.getName());
+            } catch (IOException e) {
+                addMessage(null, "Nieprawidłowy format obrazka: " + e.getMessage());
+            }
+        }
+    }
+
+    protected void addImage(SessionImage img) {
+        imageList.getItems().add(img);
+    }
+
+    protected void onUploadImage(byte[] data, String name) {
+
     }
 
     @FXML

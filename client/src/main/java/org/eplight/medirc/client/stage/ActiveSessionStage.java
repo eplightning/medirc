@@ -1,7 +1,9 @@
 package org.eplight.medirc.client.stage;
 
+import com.google.protobuf.ByteString;
 import javafx.scene.control.Alert;
 import javafx.stage.WindowEvent;
+import org.eplight.medirc.client.data.SessionImage;
 import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.client.instance.network.Connection;
 import org.eplight.medirc.client.instance.network.dispatcher.GenericStatusDispatchFunction;
@@ -52,13 +54,13 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionEvents.Kicked.class, new JavaFxDispatchFunction<>(this::onKicked));
         dispatcher.register(SessionEvents.UserUpdated.class, new JavaFxDispatchFunction<>(this::onUserUpdated));
         dispatcher.register(Main.SessionKicked.class, new JavaFxDispatchFunction<>(this::onYouAreKicked));
+        dispatcher.register(SessionResponses.RequestImageResponse.class, new JavaFxDispatchFunction<>(this::onImageDownload));
+        dispatcher.register(SessionEvents.ImageAdded.class, new JavaFxDispatchFunction<>(this::onImageAdded));
 
         // błędy, do zastąpienia
         dispatcher.register(SessionResponses.InviteUserResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
         dispatcher.register(SessionResponses.UploadImageResponse.class,
-                new GenericStatusDispatchFunction(this::genericError));
-        dispatcher.register(SessionResponses.RemoveImageResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
         dispatcher.register(SessionResponses.KickUserResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
@@ -67,6 +69,18 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionResponses.ChangeSettingsResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
 
+    }
+
+    private void onImageAdded(SessionEvents.ImageAdded img) {
+        connection.writeAndFlush(SessionRequests.RequestImage.newBuilder().setId(img.getId()).build());
+        addImageInfo(img.getName());
+    }
+
+    private void onImageDownload(SessionResponses.RequestImageResponse img) {
+        if (!img.getStatus().getSuccess())
+            return;
+
+        addImage(new SessionImage(img.getId(), img.getData(), img.getName()));
     }
 
     private void onYouAreKicked(Main.SessionKicked msg) {
@@ -121,7 +135,8 @@ public class ActiveSessionStage extends AbstractSessionStage {
         msg.getParticipantList()
                 .forEach(a -> addParticipant(new SessionUser(a)));
 
-        // TODO: Images
+        msg.getImageList()
+                .forEach(a -> connection.writeAndFlush(SessionRequests.RequestImage.newBuilder().setId(a).build()));
     }
 
     private void onJoined(SessionEvents.Joined msg) {
@@ -204,6 +219,17 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 .setSessionId(id);
 
         b.setData(data.toBuilder().setState(nextState));
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onUploadImage(byte[] data, String name) {
+        SessionRequests.UploadImage.Builder b = SessionRequests.UploadImage.newBuilder();
+
+        b.setData(ByteString.copyFrom(data));
+        b.setName(name);
+        b.setSessionId(id);
 
         connection.writeAndFlush(b.build());
     }
