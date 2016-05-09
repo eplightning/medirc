@@ -12,6 +12,8 @@ import javafx.scene.text.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.eplight.medirc.client.data.SessionUser;
+import org.eplight.medirc.protocol.Basic;
+import org.eplight.medirc.protocol.Main;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -22,7 +24,8 @@ import java.util.function.Consumer;
  */
 abstract public class AbstractSessionStage extends Stage {
 
-    private Consumer<AbstractSessionStage> onCloseRun;
+    protected Consumer<AbstractSessionStage> onCloseRun;
+    protected Basic.HandshakeAck handshakeAck;
 
     @FXML
     private TextArea textInput;
@@ -51,8 +54,12 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ScrollPane chatScroll;
 
-    public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun) {
+    private ContextMenu activeUserContext;
+    private ContextMenu participantContext;
+
+    public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
+        this.handshakeAck = ack;
     }
 
     protected void setupWindow(String sessionName) {
@@ -66,19 +73,92 @@ abstract public class AbstractSessionStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Sesja - " + sessionName);
+        setTitle("Sesja - " + sessionName + " (Użytkownik: " + handshakeAck.getName() + ")");
         setWidth(1024);
         setHeight(742);
 
         setOnCloseRequest(this::onCloseRequest);
+
+        activeUserContext = new ContextMenu();
+
+        MenuItem kick = new MenuItem("Wyrzuć");
+        activeUserContext.getItems().add(kick);
+
+        participantContext = new ContextMenu();
+        MenuItem kick2 = new MenuItem("Wyrzuć");
+        participantContext.getItems().add(kick2);
+
+        kick.setOnAction(event -> {
+            SessionUser user = userList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onUserKick(user);
+        });
+
+        kick2.setOnAction(event -> {
+            SessionUser user = participantsList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onUserKick(user);
+        });
+    }
+
+    protected void enableContextMenu(boolean enabled) {
+        if (enabled) {
+            userList.setContextMenu(activeUserContext);
+            participantsList.setContextMenu(participantContext);
+        } else {
+            userList.setContextMenu(null);
+            participantsList.setContextMenu(null);
+        }
+    }
+
+    protected void onUserKick(SessionUser user) {
+
     }
 
     protected void addActiveUser(SessionUser user) {
         userList.getItems().add(user);
     }
 
+    protected void partUser(SessionUser user) {
+        userList.getItems().remove(user);
+        addMessage(null, user.getName() + " opuścił sesję");
+    }
+
+    protected void joinUser(SessionUser user) {
+        addActiveUser(user);
+        addMessage(null, user.getName() + " dołączył do sesji");
+    }
+
+    protected void updateUser(SessionUser user) {
+        int index = userList.getItems().indexOf(user);
+
+        if (index != -1) {
+            userList.getItems().set(index, user);
+        }
+
+        index = participantsList.getItems().indexOf(user);
+
+        if (index != -1) {
+            participantsList.getItems().set(index, user);
+        }
+
+        addMessage(null, user.getName() + " został zaaktualizowany");
+    }
+
     protected void addParticipant(SessionUser user) {
         participantsList.getItems().add(user);
+    }
+
+    protected void inviteUser(SessionUser user) {
+        addParticipant(user);
+        addMessage(null, user.getName() + " został zaproszony do sesji");
+    }
+
+    protected void kickUser(SessionUser user) {
+        participantsList.getItems().remove(user);
+        addMessage(null, user.getName() + " został wyrzucony z sesji");
     }
 
     protected void addMessage(SessionUser user, String msg) {
@@ -168,11 +248,24 @@ abstract public class AbstractSessionStage extends Stage {
     }
 
     protected void setName(String name) {
-        setTitle("Sesja - " + name);
+        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
+        addMessage(null, "Nazwa sesji została zmieniona");
+    }
+
+    protected void setState(Main.Session.State state) {
+        if (state == Main.Session.State.Finished) {
+            addMessage(null, "Sesja została zakończona");
+        } else if (state == Main.Session.State.Started) {
+            addMessage(null, "Sesja została rozpoczęta");
+        }
     }
 
     protected void disableUserInput(boolean enabled) {
-
+        textInput.setDisable(!enabled);
+        settingsButton.setDisable(!enabled);
+        sendButton.setDisable(!enabled);
+        inviteButton.setDisable(!enabled);
+        sessionButton.setDisable(!enabled);
     }
 
     protected void onSendMessage(String text) {

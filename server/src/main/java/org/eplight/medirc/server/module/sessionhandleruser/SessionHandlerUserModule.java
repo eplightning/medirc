@@ -95,6 +95,10 @@ public class SessionHandlerUserModule implements Module {
                 .setUser(user.buildSessionUserMessage(sess.getFlags(user)));
 
         sess.broadcast(msg.build());
+
+        sess.getActiveUsers().forEach(u -> {
+            u.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(u)));
+        });
     }
 
     private void onKick(KickSessionEvent ev) {
@@ -164,6 +168,14 @@ public class SessionHandlerUserModule implements Module {
                 .setUser(user.buildSessionUserMessage(sess.getFlags(user)));
 
         sess.broadcast(msg.build());
+
+        sess.getActiveUsers().forEach(u -> {
+            u.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(u)));
+        });
+
+        // don't send it to kicked person
+        if (sess.isAllowedToJoin(user))
+            user.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(user)));
     }
 
     private void onSettings(SettingsSessionEvent ev) {

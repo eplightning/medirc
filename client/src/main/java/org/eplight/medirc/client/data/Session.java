@@ -26,6 +26,10 @@ public class Session {
         return sessionMsg.getState() == Main.Session.State.Started;
     }
 
+    public boolean isArchived() {
+        return sessionMsg.getState() == Main.Session.State.Finished;
+    }
+
     public int getId() {
         return sessionMsg.getId();
     }

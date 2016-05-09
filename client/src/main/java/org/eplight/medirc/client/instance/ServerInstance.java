@@ -1,9 +1,6 @@
 package org.eplight.medirc.client.instance;
 
-import com.sun.javafx.stage.StageHelper;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 import org.eplight.medirc.client.instance.network.Connection;
 import org.eplight.medirc.client.instance.network.dispatcher.JavaFxDispatchFunction;
 import org.eplight.medirc.client.instance.network.dispatcher.MessageDispatcher;
@@ -85,6 +82,7 @@ public class ServerInstance {
 
         if (mainStage != null) {
             mainStage.close();
+            mainStage.shutdown();
             mainStage = null;
         }
     }

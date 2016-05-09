@@ -1,8 +1,10 @@
 package org.eplight.medirc.client.stage;
 
+import javafx.scene.control.Alert;
 import javafx.stage.WindowEvent;
 import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.client.instance.network.Connection;
+import org.eplight.medirc.client.instance.network.dispatcher.GenericStatusDispatchFunction;
 import org.eplight.medirc.client.instance.network.dispatcher.JavaFxDispatchFunction;
 import org.eplight.medirc.client.instance.network.dispatcher.MessageDispatcher;
 import org.eplight.medirc.protocol.*;
@@ -23,8 +25,8 @@ public class ActiveSessionStage extends AbstractSessionStage {
     private EnumSet<SessionUserFlag> yourFlags;
 
     public ActiveSessionStage(SessionResponses.JoinResponse msg, Connection connection, MessageDispatcher dispatcher,
-                              Consumer<AbstractSessionStage> onCloseRun) {
-        super(onCloseRun);
+                              Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
+        super(onCloseRun, ack);
         this.connection = connection;
         this.parentDispatcher = dispatcher;
         this.dispatcher = new MessageDispatcher();
@@ -45,6 +47,56 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionEvents.Joined.class, new JavaFxDispatchFunction<>(this::onJoined));
         dispatcher.register(SessionEvents.UserMessage.class, new JavaFxDispatchFunction<>(this::onUserMessage));
         dispatcher.register(SessionEvents.SettingsChanged.class, new JavaFxDispatchFunction<>(this::onSettingsChanged));
+        dispatcher.register(SessionEvents.NewParticipant.class, new JavaFxDispatchFunction<>(this::onNewParticipant));
+        dispatcher.register(SessionEvents.Parted.class, new JavaFxDispatchFunction<>(this::onParted));
+        dispatcher.register(SessionEvents.Kicked.class, new JavaFxDispatchFunction<>(this::onKicked));
+        dispatcher.register(SessionEvents.UserUpdated.class, new JavaFxDispatchFunction<>(this::onUserUpdated));
+        dispatcher.register(Main.SessionKicked.class, new JavaFxDispatchFunction<>(this::onYouAreKicked));
+
+        // błędy, do zastąpienia
+        dispatcher.register(SessionResponses.InviteUserResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.UploadImageResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.RemoveImageResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.KickUserResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.ChangeUserFlagsResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.ChangeSettingsResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+
+    }
+
+    private void onYouAreKicked(Main.SessionKicked msg) {
+        if (msg.getSession().getId() == id) {
+            Alert al = new Alert(Alert.AlertType.WARNING);
+            al.setTitle("Wyrzucony");
+            al.setHeaderText("Wyrzucony");
+            al.setContentText("Zostałeś wyrzucony z tej sesji");
+
+            al.showAndWait();
+
+            close();
+        }
+    }
+
+    private void onUserUpdated(SessionEvents.UserUpdated msg) {
+        updateUser(new SessionUser(msg.getUser()));
+    }
+
+    private void onParted(SessionEvents.Parted msg) {
+        partUser(new SessionUser(msg.getUser()));
+    }
+
+    private void onKicked(SessionEvents.Kicked msg) {
+        kickUser(new SessionUser(msg.getUser()));
+    }
+
+    private void genericError(SessionResponses.GenericResponse msg) {
+        if (!msg.getSuccess())
+            addMessage(null, "Błąd: " + msg.getError());
     }
 
     private String getStateButtonText(Main.Session.State state) {
@@ -61,6 +113,8 @@ public class ActiveSessionStage extends AbstractSessionStage {
     private void setupView(SessionResponses.JoinResponse msg) {
         setButtonsState(getStateButtonText(msg.getData().getState()), yourFlags.contains(SessionUserFlag.Owner));
 
+        enableContextMenu(yourFlags.contains(SessionUserFlag.Owner));
+
         msg.getActiveUserList()
                 .forEach(a -> addActiveUser(new SessionUser(a)));
 
@@ -71,7 +125,11 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onJoined(SessionEvents.Joined msg) {
-        addActiveUser(new SessionUser(msg.getUser()));
+        joinUser(new SessionUser(msg.getUser()));
+    }
+
+    private void onNewParticipant(SessionEvents.NewParticipant msg) {
+        inviteUser(new SessionUser(msg.getUser()));
     }
 
     private void onUserMessage(SessionEvents.UserMessage msg) {
@@ -81,18 +139,15 @@ public class ActiveSessionStage extends AbstractSessionStage {
     private void onSettingsChanged(SessionEvents.SettingsChanged msg) {
         if (!msg.getData().getName().equals(data.getName())) {
             setName(msg.getData().getName());
-            addMessage(null, "Nazwa sesji została zmieniona");
         }
 
         if (!msg.getData().getState().equals(data.getState())) {
             setButtonsState(getStateButtonText(msg.getData().getState()), yourFlags.contains(SessionUserFlag.Owner));
+            setState(msg.getData().getState());
         }
 
         if (msg.getData().getState() == Main.Session.State.Finished) {
             disableUserInput(false);
-            addMessage(null, "Sesja została zakończona");
-        } else if (msg.getData().getState() == Main.Session.State.Started) {
-            addMessage(null, "Sesja została rozpoczęta");
         }
 
         data = msg.getData();
@@ -149,6 +204,16 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 .setSessionId(id);
 
         b.setData(data.toBuilder().setState(nextState));
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onUserKick(SessionUser user) {
+        SessionRequests.KickUser.Builder b = SessionRequests.KickUser.newBuilder();
+
+        b.setSessionId(id);
+        b.setUserId(user.getId());
 
         connection.writeAndFlush(b.build());
     }
