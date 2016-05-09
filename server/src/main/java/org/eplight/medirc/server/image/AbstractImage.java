@@ -31,7 +31,7 @@ abstract public class AbstractImage implements Image {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        ImageIO.write(img, "jpg", stream);
+        ImageIO.write(img, "png", stream);
 
         setData(stream.toByteArray(), img.getWidth(), img.getHeight());
     }

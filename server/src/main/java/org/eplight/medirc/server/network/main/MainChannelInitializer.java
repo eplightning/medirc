@@ -8,10 +8,10 @@ import org.eplight.medirc.protocol.pipeline.ProtobufDecoder;
 import org.eplight.medirc.protocol.pipeline.ProtobufEncoder;
 import org.eplight.medirc.server.event.queue.EventQueue;
 
-public class MainChannelInitializer extends ChannelInitializer<SocketChannel> {
+import static org.eplight.medirc.protocol.ConnectionConst.MAX_MESSAGE_LENGTH;
+import static org.eplight.medirc.protocol.ConnectionConst.SIZE_FIELD_LENGTH;
 
-    public final static int MAX_MESSAGE_LENGTH = 128 * 1024;
-    public final static int SIZE_FIELD_LENGTH = 4;
+public class MainChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     protected EventQueue ev;
 

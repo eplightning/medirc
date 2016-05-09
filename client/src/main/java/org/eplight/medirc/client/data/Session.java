@@ -26,7 +26,28 @@ public class Session {
         return sessionMsg.getState() == Main.Session.State.Started;
     }
 
+    public boolean isArchived() {
+        return sessionMsg.getState() == Main.Session.State.Finished;
+    }
+
     public int getId() {
         return sessionMsg.getId();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+
+        if (!(obj instanceof Session)) return false;
+
+        Session that = (Session) obj;
+
+        return that.getId() == getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return getId();
     }
 }

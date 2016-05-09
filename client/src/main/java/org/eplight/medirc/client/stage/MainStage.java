@@ -64,7 +64,7 @@ public class MainStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Okno główne - medirc");
+        setTitle("Okno główne - medirc (Użytkownik: " + handshakeAck.getName() + ")");
         setWidth(1024);
         setHeight(800);
 
@@ -90,6 +90,8 @@ public class MainStage extends Stage {
         dispatcher.register(Main.UserList.class, new JavaFxDispatchFunction<>(this::userList));
         dispatcher.register(Main.UserDisconnected.class, new JavaFxDispatchFunction<>(this::userDisconnected));
         dispatcher.register(Main.UserConnected.class, new JavaFxDispatchFunction<>(this::userConnected));
+        dispatcher.register(Main.SessionUpdated.class, new JavaFxDispatchFunction<>(this::sessionUpdated));
+        dispatcher.register(Main.SessionKicked.class, new JavaFxDispatchFunction<>(this::sessionKicked));
         dispatcher.register(SessionResponses.JoinResponse.class, new JavaFxDispatchFunction<>(this::onJoinResponse));
 
         connection.writeAndFlush(Main.SyncRequest.newBuilder().build());
@@ -97,7 +99,7 @@ public class MainStage extends Stage {
 
     @FXML
     protected void newSessionPushed() {
-        TextInputDialog dialog = new TextInputDialog("nowa sesja");
+        TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Nowa sesja");
         dialog.setHeaderText("Nowa sesja");
         dialog.setContentText("Podaj nazwę sesji:");
@@ -164,11 +166,36 @@ public class MainStage extends Stage {
     }
 
     private void userDisconnected(Main.UserDisconnected msg){
-
+        users.getItems().remove(new User(msg.getUser()));
     }
 
     private void sessionInvite(Main.SessionInvite msg) {
         activeSessions.getItems().add(new Session(msg.getSession()));
+    }
+
+    private void sessionKicked(Main.SessionKicked msg) {
+        activeSessions.getItems().remove(new Session(msg.getSession()));
+    }
+
+    private void sessionUpdated(Main.SessionUpdated msg) {
+        Session s = new Session(msg.getSession());
+
+        int index = activeSessions.getItems().indexOf(s);
+
+        if (index == -1) {
+            if (s.isArchived()) {
+                archivedSessions.getItems().add(s);
+            } else {
+                activeSessions.getItems().add(s);
+            }
+        } else {
+            if (s.isArchived()) {
+                activeSessions.getItems().remove(index);
+                archivedSessions.getItems().add(s);
+            } else {
+                activeSessions.getItems().set(index, s);
+            }
+        }
     }
 
     private void joinSession(Session session) {
@@ -191,10 +218,14 @@ public class MainStage extends Stage {
             return;
         }
 
-        sessionStages.add(new ActiveSessionStage(msg, connection, dispatcher, this::onCloseSession));
+        sessionStages.add(new ActiveSessionStage(msg, connection, dispatcher, this::onCloseSession, handshakeAck));
     }
 
     private void onCloseSession(AbstractSessionStage s) {
         sessionStages.remove(s);
+    }
+
+    public void shutdown() {
+        sessionStages.forEach(Stage::close);
     }
 }
