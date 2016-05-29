@@ -1,19 +1,27 @@
 package org.eplight.medirc.client.stage;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.eplight.medirc.client.components.session.ImageCell;
+import org.eplight.medirc.client.components.session.ImageEditor;
 import org.eplight.medirc.client.data.SessionImage;
 import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.protocol.Basic;
@@ -65,8 +73,21 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ListView<SessionImage> imageList;
 
+    @FXML
+    private SplitPane mainSplit;
+
+    @FXML
+    private VBox imagePaneVBox;
+
+    @FXML
+    private ScrollPane imagePaneScroll;
+
+    private ImageEditor imageEditor;
+
     private ContextMenu activeUserContext;
     private ContextMenu participantContext;
+
+    private SessionImage focusedImage;
 
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
@@ -87,6 +108,12 @@ abstract public class AbstractSessionStage extends Stage {
         setTitle("Sesja - " + sessionName + " (Użytkownik: " + handshakeAck.getName() + ")");
         setWidth(1024);
         setHeight(742);
+
+        mainSplit.getItems().remove(imagePaneVBox);
+        imageEditor = new ImageEditor();
+
+        imagePaneScroll.setContent(imageEditor);
+        imagePaneScroll.setPannable(true);
 
         imageList.setCellFactory(sessionImageListView -> new ImageCell(sessionImageListView));
 
@@ -261,6 +288,33 @@ abstract public class AbstractSessionStage extends Stage {
             } catch (IOException e) {
                 addMessage(null, "Nieprawidłowy format obrazka: " + e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void onImageClicked(MouseEvent event) {
+        SessionImage img = imageList.getSelectionModel().getSelectedItem();
+
+        // odznaczanie obrazka
+        if (focusedImage == img) {
+            imageList.getSelectionModel().clearSelection();
+            img = null;
+        }
+
+        if (img == null) {
+            if (focusedImage != null) {
+                mainSplit.getItems().remove(imagePaneVBox);
+                focusedImage = null;
+            }
+        } else {
+            if (focusedImage == null) {
+                mainSplit.getItems().add(imagePaneVBox);
+            }
+
+            focusedImage = img;
+
+            imageEditor.setImage(img.getImg());
+
         }
     }
 
