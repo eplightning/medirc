@@ -256,6 +256,7 @@ public class SessionHandlerUserModule implements Module {
                 .setSessionId(sess.getId())
                 .setName(img.getName())
                 .setId(img.getId())
+                .setColor(img.getColor())
                 .build();
 
         sess.broadcast(msg);

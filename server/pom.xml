@@ -69,5 +69,10 @@
             <artifactId>guice</artifactId>
             <version>${guice.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>${imgscalr-lib.version}</version>
+        </dependency>
     </dependencies>
 </project>

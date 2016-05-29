@@ -22,4 +22,9 @@ public class MemoryImage extends AbstractImage {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public void setColor(int color) {
+        this.color = color;
+    }
 }

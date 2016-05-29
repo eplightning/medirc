@@ -68,6 +68,7 @@ message ImageAdded {
     uint32 sessionId = 1;
     uint32 id = 2;
     string name = 3;
+    uint32 color = 4;
 }
 
 // Obrazek usuniety

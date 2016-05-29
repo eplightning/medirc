@@ -503,6 +503,7 @@ public class SessionInputModule implements Module {
         response.setId(img.getId())
                 .setData(ByteString.copyFrom(img.getData()))
                 .setName(img.getName())
+                .setColor(img.getColor())
                 .setStatus(statusSuccess(sess.getId()));
 
         user.getChannel().writeAndFlush(response.build());

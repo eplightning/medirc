@@ -80,7 +80,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         if (!img.getStatus().getSuccess())
             return;
 
-        addImage(new SessionImage(img.getId(), img.getData(), img.getName()));
+        addImage(new SessionImage(img.getId(), img.getData(), img.getName(), img.getColor()));
     }
 
     private void onYouAreKicked(Main.SessionKicked msg) {

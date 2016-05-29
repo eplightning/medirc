@@ -11,6 +11,7 @@ public interface Image {
     String getName();
     int getSessionId();
     int getId();
+    int getColor();
 
     int getHeight();
     int getWidth();
@@ -18,4 +19,5 @@ public interface Image {
     void setData(byte[] data, int width, int height);
     void importImage(byte[] input) throws IOException;
     void setName(String name);
+    void setColor(int color);
 }

@@ -313,7 +313,7 @@ abstract public class AbstractSessionStage extends Stage {
 
             focusedImage = img;
 
-            imageEditor.setImage(img.getImg());
+            imageEditor.setImage(img.getImg(), img.getColor());
 
         }
     }

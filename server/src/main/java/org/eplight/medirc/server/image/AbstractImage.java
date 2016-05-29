@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.image;
 
+import org.imgscalr.Scalr;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -13,6 +15,7 @@ abstract public class AbstractImage implements Image {
 
     protected int height;
     protected int width;
+    protected int color;
     protected String name;
     protected byte[] data;
     protected int sessionId;
@@ -34,6 +37,19 @@ abstract public class AbstractImage implements Image {
         ImageIO.write(img, "png", stream);
 
         setData(stream.toByteArray(), img.getWidth(), img.getHeight());
+        setColor(findColor(img));
+    }
+
+    private int findColor(BufferedImage img) {
+        BufferedImage scaled;
+
+        try {
+            scaled = Scalr.resize(img, Scalr.Method.SPEED, Scalr.Mode.FIT_EXACT, 1, 1);
+        } catch (Exception e) {
+            return 0;
+        }
+
+        return scaled.getRGB(0, 0);
     }
 
     @Override
@@ -64,6 +80,11 @@ abstract public class AbstractImage implements Image {
     @Override
     public int getId() {
         return id;
+    }
+
+    @Override
+    public int getColor() {
+        return color;
     }
 
     @Override

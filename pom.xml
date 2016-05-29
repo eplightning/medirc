@@ -27,6 +27,7 @@
         <log4j.version>2.5</log4j.version>
         <netty.version>4.0.35.Final</netty.version>
         <guice.version>4.0</guice.version>
+        <imgscalr-lib.version>4.2</imgscalr-lib.version>
     </properties>
 
     <build>

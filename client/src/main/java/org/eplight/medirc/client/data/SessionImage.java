@@ -3,6 +3,7 @@ package org.eplight.medirc.client.data;
 import com.google.protobuf.ByteString;
 import io.netty.buffer.ByteBufInputStream;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 import java.io.ByteArrayInputStream;
 
@@ -14,16 +15,24 @@ public class SessionImage {
     private int id;
     private String name;
     private Image img;
+    private Color color;
 
     public SessionImage(int id, String name) {
         this.id = id;
         this.name = name;
+        this.color = Color.BLACK;
     }
 
-    public SessionImage(int id, ByteString data, String name) {
+    public SessionImage(int id, ByteString data, String name, int color) {
         this.id = id;
         this.name = name;
         this.img = new Image(data.newInput());
+
+        int blue = color & 0xFF;
+        int green = (color & 0xFF00) >> 8;
+        int red = (color & 0xFF0000) >> 16;
+
+        this.color = Color.rgb(red, green, blue, 1.0);
     }
 
     public int getId() {
@@ -36,5 +45,9 @@ public class SessionImage {
 
     public String getName() {
         return name;
+    }
+
+    public Color getColor() {
+        return color;
     }
 }

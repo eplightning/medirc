@@ -24,6 +24,7 @@ public class ImageEditor extends Group {
     private Image image;
     private Canvas canvas;
     private Canvas canvasSelection;
+    private Color defaultColor;
 
     private IntegerProperty width;
     private IntegerProperty height;
@@ -136,8 +137,9 @@ public class ImageEditor extends Group {
         });
     }
 
-    public void setImage(Image img) {
+    public void setImage(Image img, Color color) {
         image = img;
+        defaultColor = color.invert();
 
         width.set((int) Math.round(img.getWidth()));
         height.set((int) Math.round(img.getHeight()));
@@ -189,7 +191,7 @@ public class ImageEditor extends Group {
             return;
 
         gc.save();
-        selectPainter.get().paint(gc, from, to, Color.color(0, 0, 0.2, 0.1));
+        selectPainter.get().paint(gc, from, to, defaultColor);
         gc.restore();
     }
 
