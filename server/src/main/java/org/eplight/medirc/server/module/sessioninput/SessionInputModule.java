@@ -14,6 +14,7 @@ import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.image.ImageManager;
 import org.eplight.medirc.server.image.repo.ImageRepository;
 import org.eplight.medirc.server.image.repo.ImageRepositoryException;
+import org.eplight.medirc.server.image.transformations.ImageTransformations;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
@@ -503,10 +504,109 @@ public class SessionInputModule implements Module {
         response.setId(img.getId())
                 .setData(ByteString.copyFrom(img.getData()))
                 .setName(img.getName())
-                .setColor(img.getColor())
+                .setColorG(img.getColor().getG())
+                .setColorB(img.getColor().getB())
+                .setColorR(img.getColor().getR())
+                .setTransformations(img.getTransformations().toProtobuf())
                 .setStatus(statusSuccess(sess.getId()));
 
         user.getChannel().writeAndFlush(response.build());
+    }
+
+    private void onTransformImage(ActiveUser user, SessionRequests.TransformImage msg) {
+        SessionResponses.TransformImageResponse.Builder response = SessionResponses.TransformImageResponse.newBuilder();
+
+        if (msg.getId() <= 0)
+            return;
+
+        Image img = imageManager.getImage(msg.getId());
+
+        if (img == null)
+            return;
+
+        Session sess = sessions.findById(img.getSessionId());
+
+        // not found
+        if (sess == null) {
+            response.setStatus(statusError(img.getSessionId(), "Nie udało się znaleźć sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // active?
+        if (!sess.getActiveUsers().contains(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Musisz być aktywnym użytkownikiem sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // zoom prawidłowy
+        double resultSize = msg.getTransformations().getZoom() * Math.max(img.getWidth(), img.getHeight());
+
+        if (resultSize <= 1 || resultSize > 4096 || msg.getTransformations().getZoom() < 0.1) {
+            response.setStatus(statusError(img.getSessionId(), "Nieprawidłowy zoom"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // TODO: Weryfikacja fragmentów obrazka ...
+        // TODO: Uprawnienia głosu itd.
+
+        ImageTransformations f = new ImageTransformations(msg.getTransformations());
+
+        img.setTransformations(f);
+
+        response.setStatus(statusSuccess(sess.getId()));
+        user.getChannel().writeAndFlush(response.build());
+
+        loop.fireEvent(new TransformImageSessionEvent(sess, user, img));
+    }
+
+    private void onZoomImage(ActiveUser user, SessionRequests.ZoomImage msg) {
+        SessionResponses.TransformImageResponse.Builder response = SessionResponses.TransformImageResponse.newBuilder();
+
+        if (msg.getId() <= 0)
+            return;
+
+        Image img = imageManager.getImage(msg.getId());
+
+        if (img == null)
+            return;
+
+        Session sess = sessions.findById(img.getSessionId());
+
+        // not found
+        if (sess == null) {
+            response.setStatus(statusError(img.getSessionId(), "Nie udało się znaleźć sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // active?
+        if (!sess.getActiveUsers().contains(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Musisz być aktywnym użytkownikiem sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // zoom prawidłowy
+        double resultSize = msg.getZoom() * Math.max(img.getWidth(), img.getHeight());
+
+        if (resultSize <= 1 || resultSize > 4096 || msg.getZoom() < 0.1) {
+            response.setStatus(statusError(img.getSessionId(), "Nieprawidłowy zoom"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // TODO: Weryfikacja fragmentów obrazka ...
+        // TODO: Uprawnienia głosu itd.
+
+        img.getTransformations().setZoom(msg.getZoom());
+
+        response.setStatus(statusSuccess(sess.getId()));
+        user.getChannel().writeAndFlush(response.build());
+
+        loop.fireEvent(new TransformImageSessionEvent(sess, user, img));
     }
 
     @Override
@@ -523,6 +623,8 @@ public class SessionInputModule implements Module {
         dispatcher.register(SessionRequests.RemoveImage.class, new AuthedMessageFunction<>(this::onRemoveImage));
         dispatcher.register(SessionRequests.SendMessage.class, new AuthedMessageFunction<>(this::onSendMessage));
         dispatcher.register(SessionRequests.RequestImage.class, new AuthedMessageFunction<>(this::onRequestImage));
+        dispatcher.register(SessionRequests.TransformImage.class, new AuthedMessageFunction<>(this::onTransformImage));
+        dispatcher.register(SessionRequests.ZoomImage.class, new AuthedMessageFunction<>(this::onZoomImage));
     }
 
     @Override

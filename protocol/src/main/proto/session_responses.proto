@@ -55,6 +55,10 @@ message RemoveImageResponse {
     GenericResponse status = 1;
 }
 
+message TransformImageResponse {
+    GenericResponse status = 1;
+}
+
 message RequestImageResponse {
     GenericResponse status = 1;
 
@@ -62,5 +66,8 @@ message RequestImageResponse {
     uint32 id = 2;
     string name = 3;
     bytes data = 4;
-    uint32 color = 5;
+    double colorR = 5;
+    double colorG = 6;
+    double colorB = 7;
+    ImageTransformations transformations = 8;
 }

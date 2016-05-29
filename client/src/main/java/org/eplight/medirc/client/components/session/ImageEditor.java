@@ -17,6 +17,7 @@ import org.eplight.medirc.client.image.RectImageFragment;
 import org.eplight.medirc.client.image.RectSelectPainter;
 import org.eplight.medirc.client.image.SelectPainter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImageEditor extends Group {
@@ -25,6 +26,8 @@ public class ImageEditor extends Group {
     private Canvas canvas;
     private Canvas canvasSelection;
     private Color defaultColor;
+    private List<ZoomEventHandler> zoomHandlers;
+    private List<SelectionEventHandler> selectionHandlers;
 
     private IntegerProperty width;
     private IntegerProperty height;
@@ -35,7 +38,6 @@ public class ImageEditor extends Group {
     private BooleanProperty selectInProgress;
     private BooleanProperty selectPaint;
     private ObjectProperty<SelectPainter> selectPainter;
-
     private ObservableList<ImageFragment> fragmentList;
 
     public ImageEditor() {
@@ -52,6 +54,9 @@ public class ImageEditor extends Group {
 
         canvas = new Canvas();
         canvasSelection = new Canvas();
+        defaultColor = Color.WHITE;
+        zoomHandlers = new ArrayList<>();
+        selectionHandlers = new ArrayList<>();
 
         canvas.widthProperty().bind(width);
         canvas.heightProperty().bind(height);
@@ -90,7 +95,7 @@ public class ImageEditor extends Group {
 
                 power /= 20.0;
 
-                adjustZoom(direction * Math.min(0.03, power));
+                adjustZoomUser(direction * Math.min(0.03, power));
                 event.consume();
             }
         });
@@ -109,30 +114,24 @@ public class ImageEditor extends Group {
             event.consume();
         });
 
-        canvasSelection.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.isSecondaryButtonDown())
-                    return;
+        canvasSelection.setOnMouseDragged(event -> {
+            if (event.isSecondaryButtonDown())
+                return;
 
-                if (selectInProgress.get()) {
-                    selectCurrent.setValue(new Point2D(event.getX(), event.getY()));
-                    event.consume();
-                }
+            if (selectInProgress.get()) {
+                selectCurrent.setValue(new Point2D(event.getX(), event.getY()));
+                event.consume();
             }
         });
 
-        canvasSelection.setOnMouseReleased(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.isSecondaryButtonDown())
-                    return;
+        canvasSelection.setOnMouseReleased(event -> {
+            if (event.isSecondaryButtonDown())
+                return;
 
-                if (selectInProgress.get()) {
-                    System.out.print("Koniec zaznacznia");
-                    selectInProgress.setValue(false);
-                    event.consume();
-                }
+            if (selectInProgress.get()) {
+                selectionHandlers.forEach(a -> a.handle(selectStart.get(), selectCurrent.get(), zoom.get()));
+                selectInProgress.setValue(false);
+                event.consume();
             }
         });
     }
@@ -150,6 +149,10 @@ public class ImageEditor extends Group {
         selectInProgress.setValue(false);
 
         repaintCanvas();
+    }
+
+    public void changeZoom(double val) {
+        adjustZoom(val - zoom.get());
     }
 
     public void adjustZoom(double val) {
@@ -174,6 +177,37 @@ public class ImageEditor extends Group {
         selectCurrent.setValue(selectCurrent.get().multiply(difference));
 
         repaintCanvas();
+    }
+
+    public void addSelectionHandler(SelectionEventHandler h) {
+        selectionHandlers.add(h);
+    }
+
+    public void addZoomHandler(ZoomEventHandler h) {
+        zoomHandlers.add(h);
+    }
+
+    public void enableSelectionPaint(boolean val) {
+        selectPaint.setValue(val);
+    }
+
+    public void setSelectionPainter(SelectPainter painter) {
+        selectPainter.setValue(painter);
+    }
+
+    public List<ImageFragment> getFragments() {
+        return fragmentList;
+    }
+
+    public void clearSelection() {
+        selectStart.setValue(new Point2D(0, 0));
+        selectInProgress.setValue(false);
+        selectCurrent.setValue(new Point2D(0 ,0));
+    }
+
+    private void adjustZoomUser(double val) {
+        adjustZoom(val);
+        zoomHandlers.forEach(a -> a.handle(zoom.get()));
     }
 
     private void repaintSelect() {
@@ -206,5 +240,13 @@ public class ImageEditor extends Group {
             frag.paint(gc, zoom.get());
             gc.restore();
         }
+    }
+
+    public interface SelectionEventHandler {
+        void handle(Point2D start, Point2D end, double zoom);
+    }
+
+    public interface ZoomEventHandler {
+        void handle(double zoom);
     }
 }

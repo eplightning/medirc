@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.transformations.ImageTransformations;
+
 import java.io.IOException;
 
 /**
@@ -11,7 +13,8 @@ public interface Image {
     String getName();
     int getSessionId();
     int getId();
-    int getColor();
+    ImageColor getColor();
+    ImageTransformations getTransformations();
 
     int getHeight();
     int getWidth();
@@ -19,5 +22,6 @@ public interface Image {
     void setData(byte[] data, int width, int height);
     void importImage(byte[] input) throws IOException;
     void setName(String name);
-    void setColor(int color);
+    void setColor(ImageColor color);
+    void setTransformations(ImageTransformations transformations);
 }

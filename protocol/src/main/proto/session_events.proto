@@ -68,13 +68,22 @@ message ImageAdded {
     uint32 sessionId = 1;
     uint32 id = 2;
     string name = 3;
-    uint32 color = 4;
+    double colorR = 4;
+    double colorG = 5;
+    double colorB = 6;
 }
 
 // Obrazek usuniety
 message ImageRemoved {
     uint32 sessionId = 1;
     uint32 id = 2;
+}
+
+// Obrazek przekształcony
+message ImageTransformed {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+    ImageTransformations transformations = 3;
 }
 
 // Zmiana ustawien sesji

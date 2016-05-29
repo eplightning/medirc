@@ -58,6 +58,17 @@ message RemoveImage {
     uint32 id = 1;
 }
 
+// Zmiana obrazka
+message TransformImage {
+    uint32 id = 1;
+    ImageTransformations transformations = 2;
+}
+
+message ZoomImage {
+    uint32 id = 1;
+    double zoom = 2;
+}
+
 //
 // Czat
 //

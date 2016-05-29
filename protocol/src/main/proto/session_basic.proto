@@ -27,3 +27,25 @@ enum UserFlags {
     Voice = 4; // prawo do manipulacji obrazkami
 }
 
+// rzeczy do obrazków
+message RectFragment {
+    uint32 x1 = 1;
+    uint32 y1 = 2;
+    uint32 x2 = 3;
+    uint32 y2 = 4;
+    double colorR = 5;
+    double colorG = 6;
+    double colorB = 7;
+    double zoom = 8;
+}
+
+message ImageFragment {
+    oneof frag {
+        RectFragment rect = 1;
+    }
+}
+
+message ImageTransformations {
+    double zoom = 1;
+    repeated ImageFragment fragments = 2;
+}

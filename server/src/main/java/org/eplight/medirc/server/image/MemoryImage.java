@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.transformations.ImageTransformations;
+
 /**
  * Created by EpLightning on 07.05.2016.
  */
@@ -24,7 +26,12 @@ public class MemoryImage extends AbstractImage {
     }
 
     @Override
-    public void setColor(int color) {
+    public void setColor(ImageColor color) {
         this.color = color;
+    }
+
+    @Override
+    public void setTransformations(ImageTransformations transformations) {
+        this.transformations = transformations;
     }
 }

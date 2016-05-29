@@ -256,7 +256,9 @@ public class SessionHandlerUserModule implements Module {
                 .setSessionId(sess.getId())
                 .setName(img.getName())
                 .setId(img.getId())
-                .setColor(img.getColor())
+                .setColorG(img.getColor().getG())
+                .setColorB(img.getColor().getB())
+                .setColorR(img.getColor().getR())
                 .build();
 
         sess.broadcast(msg);
@@ -276,6 +278,21 @@ public class SessionHandlerUserModule implements Module {
         sess.broadcast(msg);
     }
 
+    private void onTransformImage(TransformImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image transformed: `" + sess.getName() + "`");
+
+        SessionEvents.ImageTransformed msg = SessionEvents.ImageTransformed.newBuilder()
+                .setSessionId(sess.getId())
+                .setId(img.getId())
+                .setTransformations(img.getTransformations().toProtobuf())
+                .build();
+
+        sess.broadcast(msg);
+    }
+
     @Override
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChangeFlagsSessionEvent.class, this::onChangeFlags));
@@ -287,6 +304,7 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(SettingsSessionEvent.class, this::onSettings));
         loop.registerConsumer(new FunctionConsumer<>(UploadImageSessionEvent.class, this::onUploadImage));
         loop.registerConsumer(new FunctionConsumer<>(RemoveImageSessionEvent.class, this::onRemoveImage));
+        loop.registerConsumer(new FunctionConsumer<>(TransformImageSessionEvent.class, this::onTransformImage));
     }
 
     @Override

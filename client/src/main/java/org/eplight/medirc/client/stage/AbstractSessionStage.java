@@ -1,37 +1,36 @@
 package org.eplight.medirc.client.stage;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 import org.eplight.medirc.client.components.session.ImageCell;
 import org.eplight.medirc.client.components.session.ImageEditor;
+import org.eplight.medirc.client.data.AllowedActions;
 import org.eplight.medirc.client.data.SessionImage;
+import org.eplight.medirc.client.data.SessionImageTransformations;
 import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionBasic;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -42,6 +41,9 @@ abstract public class AbstractSessionStage extends Stage {
 
     protected Consumer<AbstractSessionStage> onCloseRun;
     protected Basic.HandshakeAck handshakeAck;
+
+    private ImageEditor imageEditor;
+    protected SessionImage focusedImage;
 
     @FXML
     private TextArea textInput;
@@ -82,19 +84,13 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ScrollPane imagePaneScroll;
 
-    private ImageEditor imageEditor;
-
-    private ContextMenu activeUserContext;
-    private ContextMenu participantContext;
-
-    private SessionImage focusedImage;
-
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
         this.handshakeAck = ack;
     }
 
-    protected void setupWindow(String sessionName) {
+    protected void setupWindow(String sessionName, String username) {
+        // wczytanie FXML-a
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SessionWindow.fxml"));
         loader.setController(this);
 
@@ -105,37 +101,45 @@ abstract public class AbstractSessionStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Sesja - " + sessionName + " (Użytkownik: " + handshakeAck.getName() + ")");
+        // właściwości okna
+        setTitle("Sesja - " + sessionName + " (Użytkownik: " + username + ")");
         setWidth(1024);
         setHeight(742);
-
-        mainSplit.getItems().remove(imagePaneVBox);
-        imageEditor = new ImageEditor();
-
-        imagePaneScroll.setContent(imageEditor);
-        imagePaneScroll.setPannable(true);
-
-        imageList.setCellFactory(sessionImageListView -> new ImageCell(sessionImageListView));
-
         setOnCloseRequest(this::onCloseRequest);
 
-        activeUserContext = new ContextMenu();
+        // ustawianie widoku obrazka
+        mainSplit.getItems().remove(imagePaneVBox);
+        imageEditor = new ImageEditor();
+        imagePaneScroll.setContent(imageEditor);
 
-        MenuItem kick = new MenuItem("Wyrzuć");
-        activeUserContext.getItems().add(kick);
+        imageEditor.addSelectionHandler(this::onImageEditorSelected);
+        imageEditor.addZoomHandler(this::onImageEditorZoom);
 
-        participantContext = new ContextMenu();
-        MenuItem kick2 = new MenuItem("Wyrzuć");
-        participantContext.getItems().add(kick2);
+        // lista obrazków
+        imageList.setCellFactory(ImageCell::new);
 
-        kick.setOnAction(event -> {
+        // menu kontekstowe
+        userList.setContextMenu(new ContextMenu());
+        participantsList.setContextMenu(new ContextMenu());
+
+        MenuItem activeKick = new MenuItem("Wyrzuć");
+        activeKick.setId("kick");
+
+        MenuItem participantKick = new MenuItem("Wyrzuć");
+        participantKick.setId("kick-participant");
+
+        userList.getContextMenu().getItems().addAll(activeKick);
+        participantsList.getContextMenu().getItems().addAll(participantKick);
+
+        // akcje dla menu kontekstowych
+        activeKick.setOnAction(event -> {
             SessionUser user = userList.getSelectionModel().getSelectedItem();
 
             if (user != null)
                 onUserKick(user);
         });
 
-        kick2.setOnAction(event -> {
+        participantKick.setOnAction(event -> {
             SessionUser user = participantsList.getSelectionModel().getSelectedItem();
 
             if (user != null)
@@ -143,18 +147,22 @@ abstract public class AbstractSessionStage extends Stage {
         });
     }
 
-    protected void enableContextMenu(boolean enabled) {
-        if (enabled) {
-            userList.setContextMenu(activeUserContext);
-            participantsList.setContextMenu(participantContext);
-        } else {
-            userList.setContextMenu(null);
-            participantsList.setContextMenu(null);
+    protected void setAllowedActions(EnumSet<AllowedActions> actions) {
+        for (MenuItem i : userList.getContextMenu().getItems()) {
+            switch (i.getId()) {
+                case "kick":
+                    i.setDisable(!actions.contains(AllowedActions.Kick));
+                    break;
+            }
         }
-    }
 
-    protected void onUserKick(SessionUser user) {
-
+        for (MenuItem i : participantsList.getContextMenu().getItems()) {
+            switch (i.getId()) {
+                case "kick-participant":
+                    i.setDisable(!actions.contains(AllowedActions.Kick));
+                    break;
+            }
+        }
     }
 
     protected void addActiveUser(SessionUser user) {
@@ -187,8 +195,59 @@ abstract public class AbstractSessionStage extends Stage {
         addMessage(null, user.getName() + " został zaaktualizowany");
     }
 
+    protected void updateImageTransform(int id, SessionImageTransformations t) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        img.setTransformations(t);
+
+        if (img == focusedImage) {
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getTransformations().getFragments());
+            imageEditor.changeZoom(img.getTransformations().getZoom());
+            imageEditor.clearSelection();
+        }
+    }
+
     protected void addParticipant(SessionUser user) {
         participantsList.getItems().add(user);
+    }
+
+    protected void setButtonsState(String stateText, boolean enabled) {
+        settingsButton.setDisable(!enabled);
+        sessionButton.setDisable(!enabled);
+        inviteButton.setDisable(!enabled);
+        sessionButton.setText(stateText);
+    }
+
+    protected void setName(String name) {
+        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
+        addMessage(null, "Nazwa sesji została zmieniona");
+    }
+
+    protected void setState(Main.Session.State state) {
+        if (state == Main.Session.State.Finished) {
+            addMessage(null, "Sesja została zakończona");
+        } else if (state == Main.Session.State.Started) {
+            addMessage(null, "Sesja została rozpoczęta");
+        }
+    }
+
+    protected void disableUserInput(boolean enabled) {
+        textInput.setDisable(!enabled);
+        settingsButton.setDisable(!enabled);
+        sendButton.setDisable(!enabled);
+        inviteButton.setDisable(!enabled);
+        sessionButton.setDisable(!enabled);
     }
 
     protected void inviteUser(SessionUser user) {
@@ -231,8 +290,8 @@ abstract public class AbstractSessionStage extends Stage {
         chatScroll.setVvalue(1.0);
     }
 
-    protected void onCloseRequest(WindowEvent event) {
-        onCloseRun.accept(this);
+    protected void addImage(SessionImage img) {
+        imageList.getItems().add(img);
     }
 
     @FXML
@@ -314,21 +373,29 @@ abstract public class AbstractSessionStage extends Stage {
             focusedImage = img;
 
             imageEditor.setImage(img.getImg(), img.getColor());
-
+            imageEditor.changeZoom(img.getTransformations().getZoom());
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getTransformations().getFragments());
         }
-    }
-
-    protected void addImage(SessionImage img) {
-        imageList.getItems().add(img);
-    }
-
-    protected void onUploadImage(byte[] data, String name) {
-
     }
 
     @FXML
     private void onSessionButton(ActionEvent event) {
         onSessionAdvanced();
+    }
+
+    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom) {
+    }
+
+    protected void onImageEditorZoom(double zoom) {
+    }
+
+    protected void onCloseRequest(WindowEvent event) {
+        onCloseRun.accept(this);
+    }
+
+    protected void onUploadImage(byte[] data, String name) {
+
     }
 
     protected void onInviteSend(String name) {
@@ -339,35 +406,11 @@ abstract public class AbstractSessionStage extends Stage {
 
     }
 
-    protected void setButtonsState(String stateText, boolean enabled) {
-        settingsButton.setDisable(!enabled);
-        sessionButton.setDisable(!enabled);
-        inviteButton.setDisable(!enabled);
-        sessionButton.setText(stateText);
-    }
-
-    protected void setName(String name) {
-        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
-        addMessage(null, "Nazwa sesji została zmieniona");
-    }
-
-    protected void setState(Main.Session.State state) {
-        if (state == Main.Session.State.Finished) {
-            addMessage(null, "Sesja została zakończona");
-        } else if (state == Main.Session.State.Started) {
-            addMessage(null, "Sesja została rozpoczęta");
-        }
-    }
-
-    protected void disableUserInput(boolean enabled) {
-        textInput.setDisable(!enabled);
-        settingsButton.setDisable(!enabled);
-        sendButton.setDisable(!enabled);
-        inviteButton.setDisable(!enabled);
-        sessionButton.setDisable(!enabled);
-    }
-
     protected void onSendMessage(String text) {
         textInput.setText("");
+    }
+
+    protected void onUserKick(SessionUser user) {
+
     }
 }

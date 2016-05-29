@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import io.netty.buffer.ByteBufInputStream;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import org.eplight.medirc.protocol.SessionBasic;
 
 import java.io.ByteArrayInputStream;
 
@@ -16,6 +17,7 @@ public class SessionImage {
     private String name;
     private Image img;
     private Color color;
+    private SessionImageTransformations transformations;
 
     public SessionImage(int id, String name) {
         this.id = id;
@@ -23,16 +25,13 @@ public class SessionImage {
         this.color = Color.BLACK;
     }
 
-    public SessionImage(int id, ByteString data, String name, int color) {
+    public SessionImage(int id, ByteString data, String name, Color color, SessionBasic.ImageTransformations t) {
         this.id = id;
         this.name = name;
         this.img = new Image(data.newInput());
 
-        int blue = color & 0xFF;
-        int green = (color & 0xFF00) >> 8;
-        int red = (color & 0xFF0000) >> 16;
-
-        this.color = Color.rgb(red, green, blue, 1.0);
+        this.color = color;
+        this.transformations = new SessionImageTransformations(t);
     }
 
     public int getId() {
@@ -49,5 +48,13 @@ public class SessionImage {
 
     public Color getColor() {
         return color;
+    }
+
+    public SessionImageTransformations getTransformations() {
+        return transformations;
+    }
+
+    public void setTransformations(SessionImageTransformations transformations) {
+        this.transformations = transformations;
     }
 }

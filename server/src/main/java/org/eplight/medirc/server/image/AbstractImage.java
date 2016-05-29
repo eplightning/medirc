@@ -1,5 +1,6 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.transformations.ImageTransformations;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
@@ -15,14 +16,17 @@ abstract public class AbstractImage implements Image {
 
     protected int height;
     protected int width;
-    protected int color;
+    protected ImageColor color;
     protected String name;
     protected byte[] data;
     protected int sessionId;
     protected int id;
+    protected ImageTransformations transformations;
 
     public AbstractImage(int sessionId) {
         this.sessionId = sessionId;
+        this.transformations = new ImageTransformations();
+        this.color = new ImageColor();
     }
 
     @Override
@@ -37,7 +41,7 @@ abstract public class AbstractImage implements Image {
         ImageIO.write(img, "png", stream);
 
         setData(stream.toByteArray(), img.getWidth(), img.getHeight());
-        setColor(findColor(img));
+        setColor(new ImageColor(findColor(img)));
     }
 
     private int findColor(BufferedImage img) {
@@ -83,8 +87,13 @@ abstract public class AbstractImage implements Image {
     }
 
     @Override
-    public int getColor() {
+    public ImageColor getColor() {
         return color;
+    }
+
+    @Override
+    public ImageTransformations getTransformations() {
+        return transformations;
     }
 
     @Override
