@@ -1,7 +1,6 @@
 package org.eplight.medirc.server.image;
 
-import org.eplight.medirc.server.image.transformations.ImageFragment;
-import org.eplight.medirc.server.image.transformations.ImageTransformations;
+import org.eplight.medirc.server.image.fragments.ImageFragment;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
@@ -109,7 +108,7 @@ abstract public class AbstractImage implements Image {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || o instanceof Image) return false;
+        if (o == null || !(o instanceof Image)) return false;
 
         Image that = (Image) o;
 

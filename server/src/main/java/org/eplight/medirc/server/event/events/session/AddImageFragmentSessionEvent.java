@@ -1,7 +1,7 @@
 package org.eplight.medirc.server.event.events.session;
 
 import org.eplight.medirc.server.image.Image;
-import org.eplight.medirc.server.image.transformations.ImageFragment;
+import org.eplight.medirc.server.image.fragments.ImageFragment;
 import org.eplight.medirc.server.session.Session;
 
 public class AddImageFragmentSessionEvent extends AbstractSessionEvent {

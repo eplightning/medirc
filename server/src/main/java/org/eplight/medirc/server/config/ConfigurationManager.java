@@ -30,4 +30,13 @@ public class ConfigurationManager {
 
         return null;
     }
+
+    public boolean getBool(String key) {
+        for (ConfigurationProvider p : providers) {
+            if (p.hasKey(key))
+                return p.getBool(key);
+        }
+
+        return false;
+    }
 }

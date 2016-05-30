@@ -49,4 +49,6 @@ message ImageFragment {
 
 message ImageTransformations {
     double zoom = 1;
+    int32 focusX = 2;
+    int32 focusY = 3;
 }

@@ -1,6 +1,7 @@
 package org.eplight.medirc.server.module.sessioninput;
 
 import com.google.protobuf.ByteString;
+import com.sun.media.sound.InvalidFormatException;
 import org.eplight.medirc.protocol.*;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
@@ -10,11 +11,12 @@ import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.session.*;
 import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.image.ImageManager;
+import org.eplight.medirc.server.image.fragments.ImageFragmentFactory;
 import org.eplight.medirc.server.image.repo.ImageRepository;
 import org.eplight.medirc.server.image.repo.ImageRepositoryException;
-import org.eplight.medirc.server.image.transformations.ImageFragment;
-import org.eplight.medirc.server.image.transformations.ImageTransformations;
-import org.eplight.medirc.server.image.transformations.RectImageFragment;
+import org.eplight.medirc.server.image.fragments.ImageFragment;
+import org.eplight.medirc.server.image.ImageTransformations;
+import org.eplight.medirc.server.image.fragments.RectImageFragment;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
@@ -556,12 +558,13 @@ public class SessionInputModule implements Module {
 
         ImageTransformations f = new ImageTransformations(msg.getTransformations());
 
-        img.setTransformations(f);
-
         response.setStatus(statusSuccess(sess.getId()));
         user.getChannel().writeAndFlush(response.build());
 
-        loop.fireEvent(new TransformImageSessionEvent(sess, user, img));
+        loop.fireEvent(new TransformImageSessionEvent(sess, user, img, f));
+
+        if (msg.getFocusImage())
+            loop.fireEvent(new FocusImageSessionEvent(sess, user, img));
     }
 
     private void onAddImageFragment(ActiveUser user, SessionRequests.AddImageFragment msg) {
@@ -592,10 +595,13 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        // TODO: Uprawnienia głosu itd.
+        if (msg.getFragment() == null) {
+            response.setStatus(statusError(img.getSessionId(), "Brakujący fragment obrazka w wiadmości"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
 
-        // TODO: Pare fragmentów naraz
-        img.getFragments().clear();
+        // TODO: Uprawnienia głosu itd.
 
         // id
         Optional<ImageFragment> lastFragment = img.getFragments().stream().max(Comparator.comparingInt(ImageFragment::getId));
@@ -604,17 +610,15 @@ public class SessionInputModule implements Module {
         if (lastFragment.isPresent())
             fragmentId = lastFragment.get().getId() + 1;
 
-        // TODO: Jakaś fabryka
-        if (msg.getFragment().getFragCase() != SessionBasic.ImageFragment.FragCase.RECT) {
-            response.setStatus(statusError(img.getSessionId(), "Nieprawidłowy typ fragmentu"));
+        ImageFragment frag;
+
+        try {
+            frag = ImageFragmentFactory.create(fragmentId, user, msg.getFragment());
+        } catch (InvalidFormatException e) {
+            response.setStatus(statusError(img.getSessionId(), e.getMessage()));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
-
-        RectImageFragment frag = new RectImageFragment(fragmentId);
-        frag.fromProtobuf(msg.getFragment().getRect());
-
-        img.getFragments().add(frag);
 
         response.setStatus(statusSuccess(sess.getId()));
         user.getChannel().writeAndFlush(response.build());

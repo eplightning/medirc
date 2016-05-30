@@ -1,7 +1,6 @@
 package org.eplight.medirc.server.image;
 
-import org.eplight.medirc.server.image.transformations.ImageFragment;
-import org.eplight.medirc.server.image.transformations.ImageTransformations;
+import org.eplight.medirc.server.image.fragments.ImageFragment;
 
 import java.io.IOException;
 import java.util.List;

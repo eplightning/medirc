@@ -284,6 +284,8 @@ public class SessionHandlerUserModule implements Module {
 
         logger.info("Image transformed: `" + sess.getName() + "`");
 
+        img.setTransformations(ev.getTransformations());
+
         SessionEvents.ImageTransformed msg = SessionEvents.ImageTransformed.newBuilder()
                 .setSessionId(sess.getId())
                 .setId(img.getId())
@@ -297,7 +299,9 @@ public class SessionHandlerUserModule implements Module {
         Session sess = ev.getSession();
         Image img = ev.getImg();
 
-        logger.info("Image changed fragment: `" + sess.getName() + "`");
+        logger.info("Added image fragment: `" + sess.getName() + "`");
+
+        img.getFragments().add(ev.getImgFragment());
 
         SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
         msg.setId(img.getId()).setSessionId(sess.getId());
@@ -305,6 +309,16 @@ public class SessionHandlerUserModule implements Module {
         img.getFragments().forEach(f -> msg.addFragment(f.toProtobuf()));
 
         sess.broadcast(msg.build());
+    }
+
+    private void onFocusImage(FocusImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image focused: `" + sess.getName() + "`");
+
+        sess.broadcast(SessionEvents.ImageFocus
+                .newBuilder().setId(img.getId()).setSessionId(sess.getId()).build());
     }
 
     @Override
@@ -320,6 +334,7 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(RemoveImageSessionEvent.class, this::onRemoveImage));
         loop.registerConsumer(new FunctionConsumer<>(TransformImageSessionEvent.class, this::onTransformImage));
         loop.registerConsumer(new FunctionConsumer<>(AddImageFragmentSessionEvent.class, this::onAddImageFragment));
+        loop.registerConsumer(new FunctionConsumer<>(FocusImageSessionEvent.class, this::onFocusImage));
     }
 
     @Override

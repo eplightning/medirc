@@ -5,5 +5,7 @@ public interface ConfigurationProvider {
 
     int getInt(String key);
 
+    boolean getBool(String key);
+
     boolean hasKey(String key);
 }

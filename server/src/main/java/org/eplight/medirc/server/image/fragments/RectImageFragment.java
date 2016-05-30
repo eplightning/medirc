@@ -1,8 +1,9 @@
-package org.eplight.medirc.server.image.transformations;
+package org.eplight.medirc.server.image.fragments;
 
-import com.google.protobuf.Message;
+import com.sun.media.sound.InvalidFormatException;
 import org.eplight.medirc.protocol.SessionBasic;
 import org.eplight.medirc.server.image.ImageColor;
+import org.eplight.medirc.server.user.User;
 
 public class RectImageFragment implements ImageFragment {
 
@@ -13,13 +14,24 @@ public class RectImageFragment implements ImageFragment {
     private int y2;
     private ImageColor color;
     private double zoom;
+    private User user;
 
-    public RectImageFragment(int id) {
+    public RectImageFragment(int id, User user) {
         this.id = id;
         this.color = new ImageColor();
+        this.user = user;
     }
 
-    public void fromProtobuf(SessionBasic.RectFragment frag) {
+    public void fromProtobuf(SessionBasic.RectFragment frag) throws InvalidFormatException {
+        if (frag.getColorB() > 1.0 || frag.getColorG() > 1.0 || frag.getColorG() > 1.0 || frag.getColorG() < 0.0 ||
+                frag.getColorB() < 0.0 || frag.getColorR() < 0.0) {
+            throw new InvalidFormatException("Invalid fragment color");
+        }
+
+        if (frag.getZoom() < 0.1) {
+            throw new InvalidFormatException("Invalid fragment zoom");
+        }
+
         setX1(frag.getX1());
         setX2(frag.getX2());
         setY1(frag.getY1());
@@ -95,5 +107,10 @@ public class RectImageFragment implements ImageFragment {
 
     public void setZoom(double zoom) {
         this.zoom = zoom;
+    }
+
+    @Override
+    public User getUser() {
+        return user;
     }
 }

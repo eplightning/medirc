@@ -86,12 +86,20 @@ message ImageTransformed {
     ImageTransformations transformations = 3;
 }
 
+// Prośba o focus obrazka
+message ImageFocus {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+}
+
 // Obrazek ma zmienione zaznaczenia
 message ImageFragmentsChanged {
     uint32 sessionId = 1;
     uint32 id = 2;
     repeated ImageFragment fragment = 3;
 }
+
+// Prośba o skupienie
 
 // Zmiana ustawien sesji
 message SettingsChanged {

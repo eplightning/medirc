@@ -62,6 +62,7 @@ message RemoveImage {
 message TransformImage {
     uint32 id = 1;
     ImageTransformations transformations = 2;
+    bool focusImage = 3;
 }
 
 message AddImageFragment {

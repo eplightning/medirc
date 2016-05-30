@@ -1,7 +1,5 @@
 package org.eplight.medirc.server.image;
 
-import org.eplight.medirc.server.image.transformations.ImageTransformations;
-
 /**
  * Created by EpLightning on 07.05.2016.
  */
