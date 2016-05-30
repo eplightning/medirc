@@ -40,12 +40,13 @@ message RectFragment {
 }
 
 message ImageFragment {
+    uint32 id = 1;
+
     oneof frag {
-        RectFragment rect = 1;
+        RectFragment rect = 2;
     }
 }
 
 message ImageTransformations {
     double zoom = 1;
-    repeated ImageFragment fragments = 2;
 }

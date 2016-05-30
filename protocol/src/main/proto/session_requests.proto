@@ -64,9 +64,9 @@ message TransformImage {
     ImageTransformations transformations = 2;
 }
 
-message ZoomImage {
+message AddImageFragment {
     uint32 id = 1;
-    double zoom = 2;
+    ImageFragment fragment = 2;
 }
 
 //

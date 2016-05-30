@@ -293,6 +293,20 @@ public class SessionHandlerUserModule implements Module {
         sess.broadcast(msg);
     }
 
+    private void onAddImageFragment(AddImageFragmentSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image changed fragment: `" + sess.getName() + "`");
+
+        SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
+        msg.setId(img.getId()).setSessionId(sess.getId());
+
+        img.getFragments().forEach(f -> msg.addFragment(f.toProtobuf()));
+
+        sess.broadcast(msg.build());
+    }
+
     @Override
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChangeFlagsSessionEvent.class, this::onChangeFlags));
@@ -305,6 +319,7 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(UploadImageSessionEvent.class, this::onUploadImage));
         loop.registerConsumer(new FunctionConsumer<>(RemoveImageSessionEvent.class, this::onRemoveImage));
         loop.registerConsumer(new FunctionConsumer<>(TransformImageSessionEvent.class, this::onTransformImage));
+        loop.registerConsumer(new FunctionConsumer<>(AddImageFragmentSessionEvent.class, this::onAddImageFragment));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.transformations.ImageFragment;
 import org.eplight.medirc.server.image.transformations.ImageTransformations;
 import org.imgscalr.Scalr;
 
@@ -8,6 +9,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by EpLightning on 07.05.2016.
@@ -22,10 +25,12 @@ abstract public class AbstractImage implements Image {
     protected int sessionId;
     protected int id;
     protected ImageTransformations transformations;
+    protected List<ImageFragment> imageFragments;
 
     public AbstractImage(int sessionId) {
         this.sessionId = sessionId;
         this.transformations = new ImageTransformations();
+        this.imageFragments = new ArrayList<>();
         this.color = new ImageColor();
     }
 
@@ -94,6 +99,11 @@ abstract public class AbstractImage implements Image {
     @Override
     public ImageTransformations getTransformations() {
         return transformations;
+    }
+
+    @Override
+    public List<ImageFragment> getFragments() {
+        return imageFragments;
     }
 
     @Override

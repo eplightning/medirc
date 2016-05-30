@@ -58,10 +58,12 @@ public class MessageFactory {
         tmpMap.put((short) 41, SessionEvents.ImageAdded.getDefaultInstance());
         tmpMap.put((short) 42, SessionEvents.ImageRemoved.getDefaultInstance());
         tmpMap.put((short) 43, SessionEvents.SettingsChanged.getDefaultInstance());
-        tmpMap.put((short) 44, SessionResponses.TransformImageResponse.getDefaultInstance());
-        tmpMap.put((short) 45, SessionEvents.ImageTransformed.getDefaultInstance());
-        tmpMap.put((short) 46, SessionRequests.TransformImage.getDefaultInstance());
-        tmpMap.put((short) 47, SessionRequests.ZoomImage.getDefaultInstance());
+        tmpMap.put((short) 44, SessionEvents.ImageTransformed.getDefaultInstance());
+        tmpMap.put((short) 45, SessionEvents.ImageFragmentsChanged.getDefaultInstance());
+        tmpMap.put((short) 46, SessionRequests.AddImageFragment.getDefaultInstance());
+        tmpMap.put((short) 47, SessionRequests.TransformImage.getDefaultInstance());
+        tmpMap.put((short) 48, SessionResponses.TransformImageResponse.getDefaultInstance());
+        tmpMap.put((short) 49, SessionResponses.AddImageFragmentResponse.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

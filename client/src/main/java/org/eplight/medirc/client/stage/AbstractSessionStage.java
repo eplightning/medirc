@@ -19,11 +19,10 @@ import org.eplight.medirc.client.components.session.ImageCell;
 import org.eplight.medirc.client.components.session.ImageEditor;
 import org.eplight.medirc.client.data.AllowedActions;
 import org.eplight.medirc.client.data.SessionImage;
-import org.eplight.medirc.client.data.SessionImageTransformations;
 import org.eplight.medirc.client.data.SessionUser;
+import org.eplight.medirc.client.image.ImageFragment;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.protocol.Main;
-import org.eplight.medirc.protocol.SessionBasic;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -31,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -195,7 +195,7 @@ abstract public class AbstractSessionStage extends Stage {
         addMessage(null, user.getName() + " został zaaktualizowany");
     }
 
-    protected void updateImageTransform(int id, SessionImageTransformations t) {
+    protected void updateImageTransform(int id, double zoom) {
         SessionImage img = null;
 
         for (SessionImage i : imageList.getItems()) {
@@ -208,12 +208,35 @@ abstract public class AbstractSessionStage extends Stage {
         if (img == null)
             return;
 
-        img.setTransformations(t);
+        img.setZoom(zoom);
 
         if (img == focusedImage) {
             imageEditor.getFragments().clear();
-            imageEditor.getFragments().addAll(img.getTransformations().getFragments());
-            imageEditor.changeZoom(img.getTransformations().getZoom());
+            imageEditor.getFragments().addAll(img.getFragments());
+            imageEditor.changeZoom(img.getZoom());
+            imageEditor.clearSelection();
+        }
+    }
+
+    protected void updateImageFragments(int id, List<ImageFragment> fragments) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        img.setFragments(fragments);
+
+        if (img == focusedImage) {
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getFragments());
+            imageEditor.changeZoom(img.getZoom());
             imageEditor.clearSelection();
         }
     }
@@ -373,9 +396,9 @@ abstract public class AbstractSessionStage extends Stage {
             focusedImage = img;
 
             imageEditor.setImage(img.getImg(), img.getColor());
-            imageEditor.changeZoom(img.getTransformations().getZoom());
+            imageEditor.changeZoom(img.getZoom());
             imageEditor.getFragments().clear();
-            imageEditor.getFragments().addAll(img.getTransformations().getFragments());
+            imageEditor.getFragments().addAll(img.getFragments());
         }
     }
 

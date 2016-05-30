@@ -1,8 +1,10 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.transformations.ImageFragment;
 import org.eplight.medirc.server.image.transformations.ImageTransformations;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by EpLightning on 07.05.2016.
@@ -15,6 +17,7 @@ public interface Image {
     int getId();
     ImageColor getColor();
     ImageTransformations getTransformations();
+    List<ImageFragment> getFragments();
 
     int getHeight();
     int getWidth();

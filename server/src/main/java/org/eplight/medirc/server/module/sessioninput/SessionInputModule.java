@@ -1,9 +1,7 @@
 package org.eplight.medirc.server.module.sessioninput;
 
 import com.google.protobuf.ByteString;
-import org.eplight.medirc.protocol.Main;
-import org.eplight.medirc.protocol.SessionRequests;
-import org.eplight.medirc.protocol.SessionResponses;
+import org.eplight.medirc.protocol.*;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
@@ -14,12 +12,13 @@ import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.image.ImageManager;
 import org.eplight.medirc.server.image.repo.ImageRepository;
 import org.eplight.medirc.server.image.repo.ImageRepositoryException;
+import org.eplight.medirc.server.image.transformations.ImageFragment;
 import org.eplight.medirc.server.image.transformations.ImageTransformations;
+import org.eplight.medirc.server.image.transformations.RectImageFragment;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.SessionState;
-import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.user.ActiveUser;
 import org.eplight.medirc.server.user.User;
@@ -27,7 +26,9 @@ import org.eplight.medirc.server.user.factory.UserRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -510,6 +511,8 @@ public class SessionInputModule implements Module {
                 .setTransformations(img.getTransformations().toProtobuf())
                 .setStatus(statusSuccess(sess.getId()));
 
+        img.getFragments().forEach(f -> response.addFragment(f.toProtobuf()));
+
         user.getChannel().writeAndFlush(response.build());
     }
 
@@ -549,7 +552,6 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        // TODO: Weryfikacja fragmentów obrazka ...
         // TODO: Uprawnienia głosu itd.
 
         ImageTransformations f = new ImageTransformations(msg.getTransformations());
@@ -562,8 +564,9 @@ public class SessionInputModule implements Module {
         loop.fireEvent(new TransformImageSessionEvent(sess, user, img));
     }
 
-    private void onZoomImage(ActiveUser user, SessionRequests.ZoomImage msg) {
-        SessionResponses.TransformImageResponse.Builder response = SessionResponses.TransformImageResponse.newBuilder();
+    private void onAddImageFragment(ActiveUser user, SessionRequests.AddImageFragment msg) {
+        SessionResponses.AddImageFragmentResponse.Builder response = SessionResponses.AddImageFragmentResponse
+                .newBuilder();
 
         if (msg.getId() <= 0)
             return;
@@ -589,24 +592,34 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        // zoom prawidłowy
-        double resultSize = msg.getZoom() * Math.max(img.getWidth(), img.getHeight());
+        // TODO: Uprawnienia głosu itd.
 
-        if (resultSize <= 1 || resultSize > 4096 || msg.getZoom() < 0.1) {
-            response.setStatus(statusError(img.getSessionId(), "Nieprawidłowy zoom"));
+        // TODO: Pare fragmentów naraz
+        img.getFragments().clear();
+
+        // id
+        Optional<ImageFragment> lastFragment = img.getFragments().stream().max(Comparator.comparingInt(ImageFragment::getId));
+        int fragmentId = 1;
+
+        if (lastFragment.isPresent())
+            fragmentId = lastFragment.get().getId() + 1;
+
+        // TODO: Jakaś fabryka
+        if (msg.getFragment().getFragCase() != SessionBasic.ImageFragment.FragCase.RECT) {
+            response.setStatus(statusError(img.getSessionId(), "Nieprawidłowy typ fragmentu"));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
 
-        // TODO: Weryfikacja fragmentów obrazka ...
-        // TODO: Uprawnienia głosu itd.
+        RectImageFragment frag = new RectImageFragment(fragmentId);
+        frag.fromProtobuf(msg.getFragment().getRect());
 
-        img.getTransformations().setZoom(msg.getZoom());
+        img.getFragments().add(frag);
 
         response.setStatus(statusSuccess(sess.getId()));
         user.getChannel().writeAndFlush(response.build());
 
-        loop.fireEvent(new TransformImageSessionEvent(sess, user, img));
+        loop.fireEvent(new AddImageFragmentSessionEvent(sess, user, img, frag));
     }
 
     @Override
@@ -624,7 +637,7 @@ public class SessionInputModule implements Module {
         dispatcher.register(SessionRequests.SendMessage.class, new AuthedMessageFunction<>(this::onSendMessage));
         dispatcher.register(SessionRequests.RequestImage.class, new AuthedMessageFunction<>(this::onRequestImage));
         dispatcher.register(SessionRequests.TransformImage.class, new AuthedMessageFunction<>(this::onTransformImage));
-        dispatcher.register(SessionRequests.ZoomImage.class, new AuthedMessageFunction<>(this::onZoomImage));
+        dispatcher.register(SessionRequests.AddImageFragment.class, new AuthedMessageFunction<>(this::onAddImageFragment));
     }
 
     @Override

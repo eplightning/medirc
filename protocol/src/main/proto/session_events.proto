@@ -86,6 +86,13 @@ message ImageTransformed {
     ImageTransformations transformations = 3;
 }
 
+// Obrazek ma zmienione zaznaczenia
+message ImageFragmentsChanged {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+    repeated ImageFragment fragment = 3;
+}
+
 // Zmiana ustawien sesji
 message SettingsChanged {
     uint32 sessionId = 1;

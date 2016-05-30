@@ -59,6 +59,10 @@ message TransformImageResponse {
     GenericResponse status = 1;
 }
 
+message AddImageFragmentResponse {
+    GenericResponse status = 1;
+}
+
 message RequestImageResponse {
     GenericResponse status = 1;
 
@@ -70,4 +74,5 @@ message RequestImageResponse {
     double colorG = 6;
     double colorB = 7;
     ImageTransformations transformations = 8;
+    repeated ImageFragment fragment = 9;
 }

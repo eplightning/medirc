@@ -7,15 +7,18 @@ import javafx.scene.paint.Color;
 import javafx.stage.WindowEvent;
 import org.eplight.medirc.client.data.AllowedActions;
 import org.eplight.medirc.client.data.SessionImage;
-import org.eplight.medirc.client.data.SessionImageTransformations;
 import org.eplight.medirc.client.data.SessionUser;
+import org.eplight.medirc.client.image.ImageFragment;
+import org.eplight.medirc.client.image.RectImageFragment;
 import org.eplight.medirc.client.instance.network.Connection;
 import org.eplight.medirc.client.instance.network.dispatcher.GenericStatusDispatchFunction;
 import org.eplight.medirc.client.instance.network.dispatcher.JavaFxDispatchFunction;
 import org.eplight.medirc.client.instance.network.dispatcher.MessageDispatcher;
 import org.eplight.medirc.protocol.*;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -61,6 +64,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionResponses.RequestImageResponse.class, new JavaFxDispatchFunction<>(this::onImageDownload));
         dispatcher.register(SessionEvents.ImageAdded.class, new JavaFxDispatchFunction<>(this::onImageAdded));
         dispatcher.register(SessionEvents.ImageTransformed.class, new JavaFxDispatchFunction<>(this::onImageTransformed));
+        dispatcher.register(SessionEvents.ImageFragmentsChanged.class, new JavaFxDispatchFunction<>(this::onImageFragmentsChanged));
 
         // błędy, do zastąpienia
         dispatcher.register(SessionResponses.InviteUserResponse.class,
@@ -75,11 +79,35 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 new GenericStatusDispatchFunction(this::genericError));
         dispatcher.register(SessionResponses.TransformImageResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
-
+        dispatcher.register(SessionResponses.AddImageFragmentResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
     }
 
-    private void onImageTransformed(SessionEvents.ImageTransformed img) {
-        updateImageTransform(img.getId(), new SessionImageTransformations(img.getTransformations()));
+    private void onImageTransformed(SessionEvents.ImageTransformed msg) {
+        updateImageTransform(msg.getId(), msg.getTransformations().getZoom());
+    }
+
+    private void onImageFragmentsChanged(SessionEvents.ImageFragmentsChanged msg) {
+        updateImageFragments(msg.getId(), fragmentsFromProtobuf(msg.getFragmentList()));
+    }
+
+    private List<ImageFragment> fragmentsFromProtobuf(List<SessionBasic.ImageFragment> list) {
+        List<ImageFragment> fragmentList = new ArrayList<>();
+
+        for (SessionBasic.ImageFragment frag : list) {
+            if (frag.getFragCase() == SessionBasic.ImageFragment.FragCase.RECT) {
+                SessionBasic.RectFragment rect = frag.getRect();
+
+                Color c = Color.color(rect.getColorR(), rect.getColorG(), rect.getColorB(), 1.0);
+
+                RectImageFragment f = new RectImageFragment(new Point2D(rect.getX1(), rect.getY1()),
+                        new Point2D(rect.getX2(), rect.getY2()), rect.getZoom(), c);
+
+                fragmentList.add(f);
+            }
+        }
+
+        return fragmentList;
     }
 
     private void onImageAdded(SessionEvents.ImageAdded img) {
@@ -92,7 +120,8 @@ public class ActiveSessionStage extends AbstractSessionStage {
             return;
 
         addImage(new SessionImage(img.getId(), img.getData(), img.getName(),
-                Color.color(img.getColorR(), img.getColorG(), img.getColorB()), img.getTransformations()));
+                Color.color(img.getColorR(), img.getColorG(), img.getColorB()), img.getTransformations(),
+                fragmentsFromProtobuf(img.getFragmentList())));
     }
 
     private void onYouAreKicked(Main.SessionKicked msg) {
@@ -266,7 +295,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         if (focusedImage == null)
             return;
 
-        SessionRequests.TransformImage.Builder b = SessionRequests.TransformImage.newBuilder();
+        SessionRequests.AddImageFragment.Builder b = SessionRequests.AddImageFragment.newBuilder();
         b.setId(focusedImage.getId());
 
         SessionBasic.RectFragment.Builder frag = SessionBasic.RectFragment.newBuilder();
@@ -282,11 +311,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         frag.setColorG(c.getGreen());
         frag.setColorB(c.getBlue());
 
-        SessionBasic.ImageTransformations.Builder b2 = SessionBasic.ImageTransformations.newBuilder();
-        b2.setZoom(focusedImage.getTransformations().getZoom());
-        b2.addFragments(SessionBasic.ImageFragment.newBuilder().setRect(frag).build());
-
-        b.setTransformations(b2);
+        b.setFragment(SessionBasic.ImageFragment.newBuilder().setRect(frag).build());
 
         connection.writeAndFlush(b.build());
     }
@@ -296,9 +321,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
         if (focusedImage == null)
             return;
 
-        SessionRequests.ZoomImage.Builder b = SessionRequests.ZoomImage.newBuilder()
+        SessionRequests.TransformImage.Builder b = SessionRequests.TransformImage.newBuilder()
                 .setId(focusedImage.getId())
-                .setZoom(zoom);
+                .setTransformations(SessionBasic.ImageTransformations.newBuilder().setZoom(zoom));
 
         connection.writeAndFlush(b.build());
     }
