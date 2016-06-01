@@ -22,6 +22,10 @@ public class Session {
         return sessionMsg.getOwnership();
     }
 
+    public boolean isInvited() {
+        return sessionMsg.getInvited();
+    }
+
     public boolean isStarted() {
         return sessionMsg.getState() == Main.Session.State.Started;
     }

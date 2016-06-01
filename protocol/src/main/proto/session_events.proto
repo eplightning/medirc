@@ -49,6 +49,14 @@ message NewParticipant {
 message Kicked {
     uint32 sessionId = 1;
     SessionUser user = 2;
+
+    enum Reason {
+        Unknown = 0;
+        Kick = 1;
+        Declined = 2;
+    }
+
+    Reason reason = 3;
 }
 
 // Zmiany uzytkownika (najpewniej flagi)

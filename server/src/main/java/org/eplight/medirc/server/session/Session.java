@@ -25,6 +25,7 @@ public interface Session {
     void invite(User user);
     void kick(User user);
     boolean isAllowedToJoin(User user);
+    boolean isAllowedToSee(User user);
     boolean isAdmin(User user);
 
     void setName(String name);

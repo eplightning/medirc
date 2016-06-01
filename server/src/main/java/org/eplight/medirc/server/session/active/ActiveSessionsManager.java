@@ -30,7 +30,7 @@ public class ActiveSessionsManager {
 
     public Set<Session> findForUser(User user) {
         return sessions.values().stream()
-                .filter(p -> p.getOwner().equals(user) || p.getParticipants().contains(user))
+                .filter(p -> p.isAllowedToSee(user))
                 .collect(Collectors.toSet());
     }
 

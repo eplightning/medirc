@@ -11,6 +11,16 @@ message JoinRequest {
     uint32 id = 1;
 }
 
+// Zaproszenia
+// bez odpowiedzi serwera
+message AcceptInviteRequest {
+    uint32 id = 1;
+}
+
+message DeclineInviteRequest {
+    uint32 id = 1;
+}
+
 // Informacja o wyjściu z sesji
 // bez odpowiedzi serwera
 message PartRequest {

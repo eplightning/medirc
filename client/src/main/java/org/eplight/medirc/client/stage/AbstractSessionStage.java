@@ -23,6 +23,8 @@ import org.eplight.medirc.client.data.SessionUser;
 import org.eplight.medirc.client.image.ImageFragment;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionEvents;
+import org.eplight.medirc.protocol.SessionUserFlag;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -182,17 +184,34 @@ abstract public class AbstractSessionStage extends Stage {
     protected void updateUser(SessionUser user) {
         int index = userList.getItems().indexOf(user);
 
+        SessionUser oldUser = null;
+
         if (index != -1) {
+            oldUser = userList.getItems().get(index);
             userList.getItems().set(index, user);
         }
 
         index = participantsList.getItems().indexOf(user);
 
         if (index != -1) {
+            oldUser = participantsList.getItems().get(index);
             participantsList.getItems().set(index, user);
         }
 
-        addMessage(null, user.getName() + " został zaaktualizowany");
+        if (oldUser != null) {
+            if (oldUser.getFlags().contains(SessionUserFlag.Invited)
+                    && !user.getFlags().contains(SessionUserFlag.Invited)) {
+                addMessage(null, user.getName() + " zaakceptował zaproszenie");
+            }
+
+            if (oldUser.getFlags().contains(SessionUserFlag.Voice)
+                    && !user.getFlags().contains(SessionUserFlag.Voice)) {
+                addMessage(null, user.getName() + " stracił prawo głosu");
+            } else if (!oldUser.getFlags().contains(SessionUserFlag.Voice)
+                    && user.getFlags().contains(SessionUserFlag.Voice)) {
+                addMessage(null, user.getName() + " otrzymał prawo głosu");
+            }
+        }
     }
 
     protected void updateImageTransform(int id, double zoom) {
@@ -278,9 +297,17 @@ abstract public class AbstractSessionStage extends Stage {
         addMessage(null, user.getName() + " został zaproszony do sesji");
     }
 
-    protected void kickUser(SessionUser user) {
+    protected void kickUser(SessionUser user, SessionEvents.Kicked.Reason reason) {
         participantsList.getItems().remove(user);
-        addMessage(null, user.getName() + " został wyrzucony z sesji");
+
+        switch (reason) {
+            case Declined:
+                addMessage(null, user.getName() + " odrzucił zaproszenie do sesji");
+                break;
+
+            default:
+                addMessage(null, user.getName() + " został wyrzucony z sesji");
+        }
     }
 
     protected void addImageInfo(String info) {

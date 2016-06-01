@@ -2,6 +2,8 @@ package org.eplight.medirc.server.module.sessioninput;
 
 import com.google.protobuf.ByteString;
 import com.sun.media.sound.InvalidFormatException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.*;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
@@ -20,6 +22,7 @@ import org.eplight.medirc.server.image.fragments.RectImageFragment;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
+import org.eplight.medirc.server.session.SessionKickReason;
 import org.eplight.medirc.server.session.SessionState;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.user.ActiveUser;
@@ -37,6 +40,8 @@ import java.util.Set;
  * Created by EpLightning on 06.05.2016.
  */
 public class SessionInputModule implements Module {
+
+    private static final Logger logger = LogManager.getLogger(SessionInputModule.class);
 
     @Inject
     private EventLoop loop;
@@ -87,6 +92,50 @@ public class SessionInputModule implements Module {
         }
     }
 
+    private void onAcceptInvite(ActiveUser user, SessionRequests.AcceptInviteRequest msg) {
+        Session sess = sessions.findById(msg.getId());
+
+        // not found
+        if (sess == null)
+            return;
+
+        // permissions
+        if (!sess.isAllowedToSee(user))
+            return;
+
+        // invited?
+        if (!sess.getFlags(user).contains(SessionUserFlag.Invited))
+            return;
+
+        logger.info("User `" + user.getName() + "` accepted invite to `" + sess.getName() + "`");
+
+        EnumSet<SessionUserFlag> newFlags = sess.getFlags(user).clone();
+
+        newFlags.remove(SessionUserFlag.Invited);
+
+        loop.fireEvent(new ChangeFlagsSessionEvent(sess, user, user, newFlags));
+    }
+
+    private void onDeclineInvite(ActiveUser user, SessionRequests.DeclineInviteRequest msg) {
+        Session sess = sessions.findById(msg.getId());
+
+        // not found
+        if (sess == null)
+            return;
+
+        // permissions
+        if (!sess.isAllowedToSee(user))
+            return;
+
+        // invited?
+        if (!sess.getFlags(user).contains(SessionUserFlag.Invited))
+            return;
+
+        logger.info("User `" + user.getName() + "` declined invite to `" + sess.getName() + "`");
+
+        loop.fireEvent(new KickSessionEvent(sess, user, user, SessionKickReason.Declined));
+    }
+
     private void onJoinRequest(ActiveUser user, SessionRequests.JoinRequest msg) {
         SessionResponses.JoinResponse.Builder response = SessionResponses.JoinResponse.newBuilder();
 
@@ -109,6 +158,13 @@ public class SessionInputModule implements Module {
         // permissions
         if (!sess.isAllowedToJoin(user)) {
             response.setStatus(statusError(msg.getId(), "Nie masz uprawnień do wejścia do danej sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // invited?
+        if (sess.getFlags(user).contains(SessionUserFlag.Invited)) {
+            response.setStatus(statusError(msg.getId(), "Musisz zaakceptować zaproszenie zanim wejdziesz do danej sesji"));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
@@ -252,7 +308,7 @@ public class SessionInputModule implements Module {
         }
 
         response.setStatus(statusSuccess(msg.getSessionId()));
-        response.setUser(foundUser.buildSessionUserMessage(EnumSet.noneOf(SessionUserFlag.class)));
+        response.setUser(foundUser.buildSessionUserMessage(EnumSet.of(SessionUserFlag.Invited)));
 
         user.getChannel().writeAndFlush(response.build());
 
@@ -304,7 +360,7 @@ public class SessionInputModule implements Module {
 
         user.getChannel().writeAndFlush(response.build());
 
-        loop.fireEvent(new KickSessionEvent(sess, user, foundUser));
+        loop.fireEvent(new KickSessionEvent(sess, user, foundUser, SessionKickReason.Kick));
     }
 
     private void onChangeUserFlags(ActiveUser user, SessionRequests.ChangeUserFlags msg) {
@@ -347,6 +403,15 @@ public class SessionInputModule implements Module {
         if ((flags.contains(SessionUserFlag.Owner) && sess.getOwner().equals(foundUser)) ||
                 (!flags.contains(SessionUserFlag.Owner) && sess.getOwner().equals(foundUser))) {
             response.setStatus(statusError(msg.getSessionId(), "Flaga właściciela jest stała"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        boolean invited = sess.getFlags(foundUser).contains(SessionUserFlag.Invited);
+
+        if ((flags.contains(SessionUserFlag.Invited) && !invited) ||
+                (!flags.contains(SessionUserFlag.Invited) && invited)) {
+            response.setStatus(statusError(msg.getSessionId(), "Flaga zaproszenia może być wyczysczona tylko przez system"));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
@@ -642,6 +707,8 @@ public class SessionInputModule implements Module {
         dispatcher.register(SessionRequests.RequestImage.class, new AuthedMessageFunction<>(this::onRequestImage));
         dispatcher.register(SessionRequests.TransformImage.class, new AuthedMessageFunction<>(this::onTransformImage));
         dispatcher.register(SessionRequests.AddImageFragment.class, new AuthedMessageFunction<>(this::onAddImageFragment));
+        dispatcher.register(SessionRequests.AcceptInviteRequest.class, new AuthedMessageFunction<>(this::onAcceptInvite));
+        dispatcher.register(SessionRequests.DeclineInviteRequest.class, new AuthedMessageFunction<>(this::onDeclineInvite));
     }
 
     @Override

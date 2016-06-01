@@ -8,7 +8,8 @@ import java.util.EnumSet;
 public enum SessionUserFlag {
     Owner(SessionBasic.UserFlags.Owner_VALUE),
     Operator(SessionBasic.UserFlags.Operator_VALUE),
-    Voice(SessionBasic.UserFlags.Voice_VALUE);
+    Voice(SessionBasic.UserFlags.Voice_VALUE),
+    Invited(SessionBasic.UserFlags.Invited_VALUE);
 
     private int value;
 

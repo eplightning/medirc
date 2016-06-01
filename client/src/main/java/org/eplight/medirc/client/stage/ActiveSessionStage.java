@@ -146,7 +146,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onKicked(SessionEvents.Kicked msg) {
-        kickUser(new SessionUser(msg.getUser()));
+        kickUser(new SessionUser(msg.getUser()), msg.getReason());
     }
 
     private void genericError(SessionResponses.GenericResponse msg) {

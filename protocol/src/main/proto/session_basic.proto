@@ -25,6 +25,7 @@ enum UserFlags {
     Owner = 1; // właściciel sesji, nie zmienny
     Operator = 2; // narazie bez wpływu
     Voice = 4; // prawo do manipulacji obrazkami
+    Invited = 8; // zaproszony, narazie bez akceptacji
 }
 
 // rzeczy do obrazków

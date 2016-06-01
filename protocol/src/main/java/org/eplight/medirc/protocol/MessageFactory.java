@@ -64,6 +64,10 @@ public class MessageFactory {
         tmpMap.put((short) 47, SessionRequests.TransformImage.getDefaultInstance());
         tmpMap.put((short) 48, SessionResponses.TransformImageResponse.getDefaultInstance());
         tmpMap.put((short) 49, SessionResponses.AddImageFragmentResponse.getDefaultInstance());
+        tmpMap.put((short) 50, SessionRequests.DeclineInviteRequest.getDefaultInstance());
+        tmpMap.put((short) 51, SessionRequests.AcceptInviteRequest.getDefaultInstance());
+        tmpMap.put((short) 52, SessionEvents.ImageFocus.getDefaultInstance());
+        tmpMap.put((short) 53, SessionEvents.UserUpdated.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

@@ -58,6 +58,8 @@ public class MemorySession extends AbstractSession {
             return;
 
         participants.add(user);
+
+        flags.put(user.getId(), EnumSet.of(SessionUserFlag.Invited));
     }
 
     @Override

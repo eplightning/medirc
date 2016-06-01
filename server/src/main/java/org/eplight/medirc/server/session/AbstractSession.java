@@ -28,6 +28,7 @@ abstract public class AbstractSession implements Session {
                 .setOwner(owner.buildUserMessage())
                 .setUsers(getActiveUsers().size())
                 .setOwnership(currentUser != null && currentUser.equals(owner))
+                .setInvited(currentUser != null && getFlags(currentUser).contains(SessionUserFlag.Invited))
                 .setState(state.toProtobuf());
 
         return builder.build();
@@ -67,6 +68,11 @@ abstract public class AbstractSession implements Session {
     public boolean isAllowedToJoin(User user) {
         return state != SessionState.Finished &&
                 (getOwner().equals(user) || (getParticipants().contains(user) && state == SessionState.Started));
+    }
+
+    @Override
+    public boolean isAllowedToSee(User user) {
+        return getOwner().equals(user) || getParticipants().contains(user);
     }
 
     @Override
