@@ -312,7 +312,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     @Override
-    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom) {
+    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom, Color defaultColor) {
         if (focusedImage == null)
             return;
 
@@ -326,7 +326,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         frag.setX2((int) Math.round(end.getX()));
         frag.setY2((int) Math.round(end.getY()));
 
-        Color c = focusedImage.getColor().invert();
+        Color c = defaultColor;
 
         frag.setColorR(c.getRed());
         frag.setColorG(c.getGreen());

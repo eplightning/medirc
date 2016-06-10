@@ -11,6 +11,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -290,6 +291,7 @@ abstract public class AbstractSessionStage extends Stage {
         focusedImage = img;
 
         imageEditor.setImage(img.getImg(), img.getColor());
+        selectColorPicker.setValue(img.getColor().invert());
         imageEditor.changeZoom(img.getZoom());
         imageEditor.getFragments().clear();
         imageEditor.getFragments().addAll(img.getFragments());
@@ -471,9 +473,12 @@ abstract public class AbstractSessionStage extends Stage {
             focusedImage = img;
 
             imageEditor.setImage(img.getImg(), img.getColor());
+            selectColorPicker.setValue(img.getColor().invert());
             imageEditor.changeZoom(img.getZoom());
             imageEditor.getFragments().clear();
             imageEditor.getFragments().addAll(img.getFragments());
+
+
         }
     }
 
@@ -515,10 +520,10 @@ abstract public class AbstractSessionStage extends Stage {
 
     @FXML
     private void onSelectColorPicked(ActionEvent event) {
-
+        imageEditor.setDefaultColor(selectColorPicker.getValue());
     }
 
-    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom) {
+    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom, Color defaultColor) {
     }
 
     protected void onImageEditorZoom(double zoom) {

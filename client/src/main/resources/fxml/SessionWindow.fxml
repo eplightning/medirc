@@ -93,7 +93,7 @@
          <children>
             <ToolBar prefHeight="40.0" prefWidth="200.0">
               <items>
-                  <ToggleButton fx:id="syncToggle" mnemonicParsing="false" onAction="#onSyncToggle" text="Synchronizacja" />
+                  <!--<ToggleButton fx:id="syncToggle" mnemonicParsing="false" onAction="#onSyncToggle" text="Synchronizacja" />-->
                   <Button mnemonicParsing="false" onAction="#onFocusButton" text="Uwaga" />
                   <MenuButton mnemonicParsing="false" text="Czyszczenie">
                     <items>

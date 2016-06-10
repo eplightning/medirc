@@ -129,7 +129,7 @@ public class ImageEditor extends Group {
                 return;
 
             if (selectInProgress.get()) {
-                selectionHandlers.forEach(a -> a.handle(selectStart.get(), selectCurrent.get(), zoom.get()));
+                selectionHandlers.forEach(a -> a.handle(selectStart.get(), selectCurrent.get(), zoom.get(), defaultColor));
                 selectInProgress.setValue(false);
                 event.consume();
             }
@@ -157,6 +157,11 @@ public class ImageEditor extends Group {
         selectInProgress.setValue(false);
 
         repaintCanvas();
+    }
+
+    public void setDefaultColor(Color c) {
+        defaultColor = c;
+        repaintSelect();
     }
 
     public void changeZoom(double val) {
@@ -251,7 +256,7 @@ public class ImageEditor extends Group {
     }
 
     public interface SelectionEventHandler {
-        void handle(Point2D start, Point2D end, double zoom);
+        void handle(Point2D start, Point2D end, double zoom, Color defaultColor);
     }
 
     public interface ZoomEventHandler {
