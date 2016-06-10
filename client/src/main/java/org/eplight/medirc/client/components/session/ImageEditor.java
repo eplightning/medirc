@@ -136,6 +136,14 @@ public class ImageEditor extends Group {
         });
     }
 
+    public int getWidth() {
+        return width.get();
+    }
+
+    public int getHeight() {
+        return height.get();
+    }
+
     public void setImage(Image img, Color color) {
         image = img;
         defaultColor = color.invert();

@@ -23,6 +23,8 @@ public class SessionImage {
     private Image img;
     private Color color;
     private double zoom;
+    private int focusX;
+    private int focusY;
     private List<ImageFragment> fragmentList;
 
     public SessionImage(int id, String name) {
@@ -40,6 +42,8 @@ public class SessionImage {
 
         this.color = color;
         this.zoom = t.getZoom();
+        this.focusX = t.getFocusX();
+        this.focusY = t.getFocusY();
         this.fragmentList = list;
     }
 
@@ -73,6 +77,22 @@ public class SessionImage {
 
     public void setFragments(List<ImageFragment> fragmentList) {
         this.fragmentList = fragmentList;
+    }
+
+    public int getFocusX() {
+        return focusX;
+    }
+
+    public void setFocusX(int focusX) {
+        this.focusX = focusX;
+    }
+
+    public int getFocusY() {
+        return focusY;
+    }
+
+    public void setFocusY(int focusY) {
+        this.focusY = focusY;
     }
 
     @Override

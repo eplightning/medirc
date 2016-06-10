@@ -65,6 +65,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionEvents.ImageAdded.class, new JavaFxDispatchFunction<>(this::onImageAdded));
         dispatcher.register(SessionEvents.ImageTransformed.class, new JavaFxDispatchFunction<>(this::onImageTransformed));
         dispatcher.register(SessionEvents.ImageFragmentsChanged.class, new JavaFxDispatchFunction<>(this::onImageFragmentsChanged));
+        dispatcher.register(SessionEvents.ImageFocus.class, new JavaFxDispatchFunction<>(this::onImageFocus));
 
         // błędy, do zastąpienia
         dispatcher.register(SessionResponses.InviteUserResponse.class,
@@ -83,8 +84,13 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 new GenericStatusDispatchFunction(this::genericError));
     }
 
+    private void onImageFocus(SessionEvents.ImageFocus msg) {
+        focusImage(msg.getId());
+    }
+
     private void onImageTransformed(SessionEvents.ImageTransformed msg) {
-        updateImageTransform(msg.getId(), msg.getTransformations().getZoom());
+        updateImageTransform(msg.getId(), msg.getTransformations().getZoom(), msg.getTransformations().getFocusX(),
+                msg.getTransformations().getFocusY());
     }
 
     private void onImageFragmentsChanged(SessionEvents.ImageFragmentsChanged msg) {
@@ -286,6 +292,21 @@ public class ActiveSessionStage extends AbstractSessionStage {
 
         b.setSessionId(id);
         b.setUserId(user.getId());
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onFocusClick(int x, int y) {
+        if (focusedImage == null)
+            return;
+
+        SessionRequests.TransformImage.Builder b = SessionRequests.TransformImage.newBuilder()
+                .setId(focusedImage.getId())
+                .setFocusImage(true)
+                .setTransformations(SessionBasic.ImageTransformations.newBuilder()
+                        .setZoom(focusedImage.getZoom())
+                        .setFocusX(x).setFocusY(y));
 
         connection.writeAndFlush(b.build());
     }

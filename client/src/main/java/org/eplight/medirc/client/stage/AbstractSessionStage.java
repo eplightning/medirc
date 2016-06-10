@@ -86,6 +86,12 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ScrollPane imagePaneScroll;
 
+    @FXML
+    private ColorPicker selectColorPicker;
+
+    @FXML
+    private ToggleButton syncToggle;
+
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
         this.handshakeAck = ack;
@@ -214,7 +220,7 @@ abstract public class AbstractSessionStage extends Stage {
         }
     }
 
-    protected void updateImageTransform(int id, double zoom) {
+    protected void updateImageTransform(int id, double zoom, int x, int y) {
         SessionImage img = null;
 
         for (SessionImage i : imageList.getItems()) {
@@ -228,6 +234,8 @@ abstract public class AbstractSessionStage extends Stage {
             return;
 
         img.setZoom(zoom);
+        img.setFocusX(x);
+        img.setFocusY(y);
 
         if (img == focusedImage) {
             imageEditor.getFragments().clear();
@@ -258,6 +266,46 @@ abstract public class AbstractSessionStage extends Stage {
             imageEditor.changeZoom(img.getZoom());
             imageEditor.clearSelection();
         }
+    }
+
+    protected void focusImage(int id) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        if (focusedImage == null) {
+            mainSplit.getItems().add(imagePaneVBox);
+        }
+
+        imageList.getSelectionModel().select(img);
+
+        focusedImage = img;
+
+        imageEditor.setImage(img.getImg(), img.getColor());
+        imageEditor.changeZoom(img.getZoom());
+        imageEditor.getFragments().clear();
+        imageEditor.getFragments().addAll(img.getFragments());
+
+        int dw = imageEditor.getWidth() - (int) imagePaneScroll.getWidth();
+        int dh = imageEditor.getHeight() - (int) imagePaneScroll.getHeight();
+
+        if (dw > 0 && img.getFocusX() > 0 && img.getFocusX() < dw)
+            imagePaneScroll.setHvalue((double) img.getFocusX() / dw);
+        else
+            imagePaneScroll.setHvalue(0);
+
+        if (dh > 0 && img.getFocusY() > 0 && img.getFocusY() < dh)
+            imagePaneScroll.setVvalue((double) img.getFocusY() / dh);
+        else
+            imagePaneScroll.setVvalue(0);
     }
 
     protected void addParticipant(SessionUser user) {
@@ -434,6 +482,42 @@ abstract public class AbstractSessionStage extends Stage {
         onSessionAdvanced();
     }
 
+    @FXML
+    private void onSyncToggle(ActionEvent event) {
+
+    }
+
+    @FXML
+    private void onFocusButton(ActionEvent event) {
+        int x = (int) Math.ceil(((double) imageEditor.getWidth() - imagePaneScroll.getWidth())
+                * imagePaneScroll.getHvalue());
+        int y = (int) Math.ceil(((double) imageEditor.getHeight() - imagePaneScroll.getHeight())
+                * imagePaneScroll.getVvalue());
+
+        if (x < 0)
+            x = 0;
+
+        if (y < 0)
+            y = 0;
+
+        onFocusClick(x, y);
+    }
+
+    @FXML
+    private void onClearMySelection(ActionEvent event) {
+
+    }
+
+    @FXML
+    private void onClearAllSelection(ActionEvent event) {
+
+    }
+
+    @FXML
+    private void onSelectColorPicked(ActionEvent event) {
+
+    }
+
     protected void onImageEditorSelected(Point2D start, Point2D end, double zoom) {
     }
 
@@ -461,6 +545,10 @@ abstract public class AbstractSessionStage extends Stage {
     }
 
     protected void onUserKick(SessionUser user) {
+
+    }
+
+    protected void onFocusClick(int x, int y) {
 
     }
 }
