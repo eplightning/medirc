@@ -4,16 +4,13 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import org.eplight.medirc.client.image.ImageFragment;
-import org.eplight.medirc.client.image.RectImageFragment;
 import org.eplight.medirc.client.image.RectSelectPainter;
 import org.eplight.medirc.client.image.SelectPainter;
 
@@ -37,6 +34,7 @@ public class ImageEditor extends Group {
     private ObjectProperty<Point2D> selectCurrent;
     private BooleanProperty selectInProgress;
     private BooleanProperty selectPaint;
+    private BooleanProperty editable;
     private ObjectProperty<SelectPainter> selectPainter;
     private ObservableList<ImageFragment> fragmentList;
 
@@ -51,6 +49,7 @@ public class ImageEditor extends Group {
         selectPaint = new SimpleBooleanProperty(true);
         selectPainter = new SimpleObjectProperty<>(new RectSelectPainter());
         fragmentList = FXCollections.observableArrayList();
+        editable = new SimpleBooleanProperty(false);
 
         canvas = new Canvas();
         canvasSelection = new Canvas();
@@ -86,7 +85,7 @@ public class ImageEditor extends Group {
         canvasSelection.setOnScroll(event -> {
             double delta = event.getDeltaX() == 0 ? event.getDeltaY() : event.getDeltaX();
 
-            if (event.isShiftDown()) {
+            if (event.isShiftDown() && editable.get()) {
                 int direction = delta > 0 ? -1 : 1;
                 double power = Math.abs(delta);
 
@@ -101,6 +100,9 @@ public class ImageEditor extends Group {
         });
 
         canvasSelection.setOnMousePressed(event -> {
+            if (!editable.get())
+                return;
+
             if (event.isSecondaryButtonDown())
                 return;
 
@@ -115,6 +117,9 @@ public class ImageEditor extends Group {
         });
 
         canvasSelection.setOnMouseDragged(event -> {
+            if (!editable.get())
+                return;
+
             if (event.isSecondaryButtonDown())
                 return;
 
@@ -125,6 +130,9 @@ public class ImageEditor extends Group {
         });
 
         canvasSelection.setOnMouseReleased(event -> {
+            if (!editable.get())
+                return;
+
             if (event.isSecondaryButtonDown())
                 return;
 
@@ -134,6 +142,10 @@ public class ImageEditor extends Group {
                 event.consume();
             }
         });
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable.setValue(editable);
     }
 
     public int getWidth() {

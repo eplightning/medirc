@@ -85,6 +85,7 @@ message ImageAdded {
 message ImageRemoved {
     uint32 sessionId = 1;
     uint32 id = 2;
+    string name = 3;
 }
 
 // Obrazek przekształcony

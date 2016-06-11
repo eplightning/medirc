@@ -4,7 +4,10 @@ import com.google.protobuf.ByteString;
 import com.sun.media.sound.InvalidFormatException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eplight.medirc.protocol.*;
+import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionRequests;
+import org.eplight.medirc.protocol.SessionResponses;
+import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
@@ -13,12 +16,11 @@ import org.eplight.medirc.server.event.events.ChannelInactiveEvent;
 import org.eplight.medirc.server.event.events.session.*;
 import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.image.ImageManager;
+import org.eplight.medirc.server.image.ImageTransformations;
+import org.eplight.medirc.server.image.fragments.ImageFragment;
 import org.eplight.medirc.server.image.fragments.ImageFragmentFactory;
 import org.eplight.medirc.server.image.repo.ImageRepository;
 import org.eplight.medirc.server.image.repo.ImageRepositoryException;
-import org.eplight.medirc.server.image.fragments.ImageFragment;
-import org.eplight.medirc.server.image.ImageTransformations;
-import org.eplight.medirc.server.image.fragments.RectImageFragment;
 import org.eplight.medirc.server.module.Module;
 import org.eplight.medirc.server.network.SocketAttributes;
 import org.eplight.medirc.server.session.Session;
@@ -397,24 +399,36 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        EnumSet<SessionUserFlag> flags = SessionUserFlag.fromProtobuf(msg.getFlags());
+        EnumSet<SessionUserFlag> flagsAdd = SessionUserFlag.fromProtobuf(msg.getFlagsAdd());
+        EnumSet<SessionUserFlag> flagsRemove = SessionUserFlag.fromProtobuf(msg.getFlagsRemove());
+        EnumSet<SessionUserFlag> flagsSwap = SessionUserFlag.fromProtobuf(msg.getFlagsSwap());
 
-        // bez sens
-        if ((flags.contains(SessionUserFlag.Owner) && sess.getOwner().equals(foundUser)) ||
-                (!flags.contains(SessionUserFlag.Owner) && sess.getOwner().equals(foundUser))) {
+        if (flagsAdd.contains(SessionUserFlag.Owner) || flagsRemove.contains(SessionUserFlag.Owner) ||
+                flagsSwap.contains(SessionUserFlag.Owner)) {
             response.setStatus(statusError(msg.getSessionId(), "Flaga właściciela jest stała"));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
 
-        boolean invited = sess.getFlags(foundUser).contains(SessionUserFlag.Invited);
-
-        if ((flags.contains(SessionUserFlag.Invited) && !invited) ||
-                (!flags.contains(SessionUserFlag.Invited) && invited)) {
+        if (flagsAdd.contains(SessionUserFlag.Invited) || flagsRemove.contains(SessionUserFlag.Invited) ||
+                flagsSwap.contains(SessionUserFlag.Invited)) {
             response.setStatus(statusError(msg.getSessionId(), "Flaga zaproszenia może być wyczysczona tylko przez system"));
             user.getChannel().writeAndFlush(response.build());
             return;
         }
+
+        // new flags
+        EnumSet<SessionUserFlag> flags = sess.getFlags(foundUser).clone();
+
+        flagsAdd.forEach(flags::add);
+        flagsRemove.forEach(flags::remove);
+        flagsSwap.forEach(f -> {
+            if (flags.contains(f)) {
+                flags.remove(f);
+            } else {
+                flags.add(f);
+            }
+        });
 
         response.setStatus(statusSuccess(msg.getSessionId()));
 
@@ -619,7 +633,11 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        // TODO: Uprawnienia głosu itd.
+        if (!sess.getOwner().equals(user) && !sess.getFlags(user).contains(SessionUserFlag.Voice)) {
+            response.setStatus(statusError(img.getSessionId(), "Nie masz uprawnień do manipulacji obrazkami"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
 
         ImageTransformations f = new ImageTransformations(msg.getTransformations());
 
@@ -666,7 +684,11 @@ public class SessionInputModule implements Module {
             return;
         }
 
-        // TODO: Uprawnienia głosu itd.
+        if (!sess.getOwner().equals(user) && !sess.getFlags(user).contains(SessionUserFlag.Voice)) {
+            response.setStatus(statusError(img.getSessionId(), "Nie masz uprawnień do manipulacji obrazkami"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
 
         // id
         Optional<ImageFragment> lastFragment = img.getFragments().stream().max(Comparator.comparingInt(ImageFragment::getId));

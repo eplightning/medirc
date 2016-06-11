@@ -53,7 +53,9 @@ message KickUser {
 message ChangeUserFlags {
     uint32 sessionId = 1;
     uint32 userId = 2;
-    int32 flags = 3;
+    int32 flagsAdd = 3;
+    int32 flagsRemove = 4;
+    int32 flagsSwap = 5;
 }
 
 // Wrzucenie obrazka

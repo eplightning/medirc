@@ -17,6 +17,7 @@ message SessionUser {
 message SessionData {
     string name = 1;
     Session.State state = 2;
+    bool autoVoice = 3;
 }
 
 // zdefiniowane flagi

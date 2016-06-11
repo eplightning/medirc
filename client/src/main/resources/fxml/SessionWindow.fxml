@@ -24,7 +24,7 @@
    <items>
       <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="742.0" prefWidth="1028.0">
          <children>
-            <ListView fx:id="imageList" onMouseClicked="#onImageClicked" orientation="HORIZONTAL" prefHeight="136.0" prefWidth="956.0">
+            <ListView fx:id="imageList" onMouseClicked="#onImageClicked" onKeyPressed="#onImageKeyPressed" orientation="HORIZONTAL" prefHeight="136.0" prefWidth="956.0">
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
@@ -38,6 +38,7 @@
                             <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Dodaj zdjęcie" />
                               <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Zaproś" />
                               <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Rozpocznij sesję" />
+                              <ToggleButton fx:id="autoVoiceButton" mnemonicParsing="false" onAction="#onAutoVoicePressed" text="Automatyczny głos" />
                           </items>
                         </ToolBar>
                         <ScrollPane fx:id="chatScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
@@ -93,8 +94,9 @@
          <children>
             <ToolBar prefHeight="40.0" prefWidth="200.0">
               <items>
+                  <ToggleButton fx:id="requestVoiceButton" disable="true" mnemonicParsing="false" onAction="#onRequestVoiceButton" text="Poproś o głos" />
                   <!--<ToggleButton fx:id="syncToggle" mnemonicParsing="false" onAction="#onSyncToggle" text="Synchronizacja" />-->
-                  <Button mnemonicParsing="false" onAction="#onFocusButton" text="Uwaga" />
+                  <Button fx:id="focusButton" mnemonicParsing="false" onAction="#onFocusButton" text="Uwaga" />
                   <MenuButton mnemonicParsing="false" text="Czyszczenie">
                     <items>
                       <MenuItem mnemonicParsing="false" onAction="#onClearMySelection" text="Usuń moje zaznaczenia" />

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package medirc;
+
+option java_package = "org.eplight.medirc.protocol";
+
+enum SessionAutoState {
+    AutoNone = 0;
+    AutoQueued = 1;
+    AutoVoiced = 2;
+}
+
+message SessionAutoInfo {
+    uint32 id = 1;
+    SessionAutoState state = 2;
+    uint32 queuePosition = 3;
+    uint32 queueUsers = 4;
+}

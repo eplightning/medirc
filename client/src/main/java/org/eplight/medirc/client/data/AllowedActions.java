@@ -1,5 +1,7 @@
 package org.eplight.medirc.client.data;
 
 public enum AllowedActions {
-    Kick
+    Kick,
+    Settings,
+    Image
 }

@@ -257,6 +257,7 @@ public class SessionHandlerUserModule implements Module {
         SessionEvents.ImageRemoved msg = SessionEvents.ImageRemoved.newBuilder()
                 .setSessionId(sess.getId())
                 .setId(img.getId())
+                .setName(img.getName())
                 .build();
 
         sess.broadcast(msg);

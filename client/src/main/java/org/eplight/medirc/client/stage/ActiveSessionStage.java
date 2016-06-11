@@ -30,6 +30,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
     private MessageDispatcher parentDispatcher;
     private MessageDispatcher dispatcher;
     private SessionBasic.SessionData data;
+    private SessionAuto.SessionAutoInfo autoInfo;
     private int id;
     private EnumSet<SessionUserFlag> yourFlags;
 
@@ -66,6 +67,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionEvents.ImageTransformed.class, new JavaFxDispatchFunction<>(this::onImageTransformed));
         dispatcher.register(SessionEvents.ImageFragmentsChanged.class, new JavaFxDispatchFunction<>(this::onImageFragmentsChanged));
         dispatcher.register(SessionEvents.ImageFocus.class, new JavaFxDispatchFunction<>(this::onImageFocus));
+        dispatcher.register(SessionEvents.ImageRemoved.class, new JavaFxDispatchFunction<>(this::onImageRemove));
 
         // błędy, do zastąpienia
         dispatcher.register(SessionResponses.InviteUserResponse.class,
@@ -81,6 +83,8 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionResponses.TransformImageResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
         dispatcher.register(SessionResponses.AddImageFragmentResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.RemoveImageResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
     }
 
@@ -130,6 +134,10 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 fragmentsFromProtobuf(img.getFragmentList())));
     }
 
+    private void onImageRemove(SessionEvents.ImageRemoved img) {
+        removeImage(new SessionImage(img.getId(), img.getName()));
+    }
+
     private void onYouAreKicked(Main.SessionKicked msg) {
         if (msg.getSession().getId() == id) {
             Alert al = new Alert(Alert.AlertType.WARNING);
@@ -143,8 +151,26 @@ public class ActiveSessionStage extends AbstractSessionStage {
         }
     }
 
+    private EnumSet<AllowedActions> allowedActionsFromFlags(EnumSet<SessionUserFlag> flags) {
+        EnumSet<AllowedActions> allowedActions = EnumSet.noneOf(AllowedActions.class);
+
+        if (flags.contains(SessionUserFlag.Owner)) {
+            allowedActions = EnumSet.allOf(AllowedActions.class);
+        }
+
+        if (flags.contains(SessionUserFlag.Voice)) {
+            allowedActions.add(AllowedActions.Image);
+        }
+
+        return allowedActions;
+    }
+
     private void onUserUpdated(SessionEvents.UserUpdated msg) {
         updateUser(new SessionUser(msg.getUser()));
+
+        if (msg.getUser().getId() == handshakeAck.getId()) {
+            setAllowedActions(allowedActionsFromFlags(SessionUserFlag.fromProtobuf(msg.getUser().getFlags())));
+        }
     }
 
     private void onParted(SessionEvents.Parted msg) {
@@ -172,14 +198,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void setupView(SessionResponses.JoinResponse msg) {
-        setButtonsState(getStateButtonText(msg.getData().getState()), yourFlags.contains(SessionUserFlag.Owner));
-
-        EnumSet<AllowedActions> allowedActions = EnumSet.noneOf(AllowedActions.class);
-
-        if (yourFlags.contains(SessionUserFlag.Owner))
-            allowedActions = EnumSet.allOf(AllowedActions.class);
-
-        setAllowedActions(allowedActions);
+        setStateText(getStateButtonText(msg.getData().getState()));
+        updateAutoData(msg.getData().getAutoVoice());
+        setAllowedActions(allowedActionsFromFlags(yourFlags));
 
         msg.getActiveUserList()
                 .forEach(a -> addActiveUser(new SessionUser(a)));
@@ -203,14 +224,42 @@ public class ActiveSessionStage extends AbstractSessionStage {
         addMessage(new SessionUser(msg.getUser()), msg.getText());
     }
 
+    private void updateAutoData(boolean enabled) {
+        if (enabled) {
+            if (autoInfo != null) {
+                switch (autoInfo.getState()) {
+                    case AutoNone:
+                        setRequestVoiceText("Poproś o głos (" + autoInfo.getQueueUsers() + ")", true, false);
+                        break;
+
+                    case AutoQueued:
+                        setRequestVoiceText("W kolejce o głos (" +
+                                autoInfo.getQueuePosition() + "/" + autoInfo.getQueueUsers() + ")", true, true);
+                        break;
+
+                    case AutoVoiced:
+                        setRequestVoiceText("Oddaj głos (" + autoInfo.getQueueUsers() + ")", true, true);
+                }
+            } else {
+                setRequestVoiceText("Poproś o głos", true, false);
+            }
+        } else {
+            setRequestVoiceText("Poproś o głos", false, false);
+        }
+    }
+
     private void onSettingsChanged(SessionEvents.SettingsChanged msg) {
         if (!msg.getData().getName().equals(data.getName())) {
             setName(msg.getData().getName());
         }
 
         if (!msg.getData().getState().equals(data.getState())) {
-            setButtonsState(getStateButtonText(msg.getData().getState()), yourFlags.contains(SessionUserFlag.Owner));
+            setStateText(getStateButtonText(msg.getData().getState()));
             setState(msg.getData().getState());
+        }
+
+        if (msg.getData().getAutoVoice() != data.getAutoVoice()) {
+            updateAutoData(data.getAutoVoice());
         }
 
         if (msg.getData().getState() == Main.Session.State.Finished) {
@@ -345,6 +394,26 @@ public class ActiveSessionStage extends AbstractSessionStage {
         SessionRequests.TransformImage.Builder b = SessionRequests.TransformImage.newBuilder()
                 .setId(focusedImage.getId())
                 .setTransformations(SessionBasic.ImageTransformations.newBuilder().setZoom(zoom));
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onVoiceUser(SessionUser user) {
+        SessionRequests.ChangeUserFlags.Builder b = SessionRequests.ChangeUserFlags.newBuilder();
+
+        b.setSessionId(id);
+        b.setUserId(user.getId());
+        b.setFlagsSwap(SessionUserFlag.toProtobuf(EnumSet.of(SessionUserFlag.Voice)));
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onImageRemoved(SessionImage img) {
+        SessionRequests.RemoveImage.Builder b = SessionRequests.RemoveImage.newBuilder();
+
+        b.setId(img.getId());
 
         connection.writeAndFlush(b.build());
     }

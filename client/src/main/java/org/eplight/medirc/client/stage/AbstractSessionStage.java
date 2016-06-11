@@ -91,7 +91,13 @@ abstract public class AbstractSessionStage extends Stage {
     private ColorPicker selectColorPicker;
 
     @FXML
-    private ToggleButton syncToggle;
+    private ToggleButton autoVoiceButton;
+
+    @FXML
+    private ToggleButton requestVoiceButton;
+
+    @FXML
+    private Button focusButton;
 
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
@@ -137,8 +143,14 @@ abstract public class AbstractSessionStage extends Stage {
         MenuItem participantKick = new MenuItem("Wyrzuć");
         participantKick.setId("kick-participant");
 
-        userList.getContextMenu().getItems().addAll(activeKick);
-        participantsList.getContextMenu().getItems().addAll(participantKick);
+        MenuItem activeVoice = new MenuItem("Nadaj/odebraj głos");
+        activeVoice.setId("voice");
+
+        MenuItem participantVoice = new MenuItem("Nadaj/odebraj głos");
+        participantVoice.setId("voice-participant");
+
+        userList.getContextMenu().getItems().addAll(activeKick, activeVoice);
+        participantsList.getContextMenu().getItems().addAll(participantKick, participantVoice);
 
         // akcje dla menu kontekstowych
         activeKick.setOnAction(event -> {
@@ -154,6 +166,20 @@ abstract public class AbstractSessionStage extends Stage {
             if (user != null)
                 onUserKick(user);
         });
+
+        activeVoice.setOnAction(event -> {
+            SessionUser user = userList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onVoiceUser(user);
+        });
+
+        participantVoice.setOnAction(event -> {
+            SessionUser user = participantsList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onVoiceUser(user);
+        });
     }
 
     protected void setAllowedActions(EnumSet<AllowedActions> actions) {
@@ -161,6 +187,10 @@ abstract public class AbstractSessionStage extends Stage {
             switch (i.getId()) {
                 case "kick":
                     i.setDisable(!actions.contains(AllowedActions.Kick));
+                    break;
+
+                case "voice":
+                    i.setDisable(!actions.contains(AllowedActions.Settings));
                     break;
             }
         }
@@ -170,7 +200,26 @@ abstract public class AbstractSessionStage extends Stage {
                 case "kick-participant":
                     i.setDisable(!actions.contains(AllowedActions.Kick));
                     break;
+
+                case "voice-participant":
+                    i.setDisable(!actions.contains(AllowedActions.Settings));
+                    break;
             }
+        }
+
+        imageEditor.setEditable(actions.contains(AllowedActions.Image));
+        focusButton.setDisable(!actions.contains(AllowedActions.Image));
+
+        if (actions.contains(AllowedActions.Settings)) {
+            settingsButton.setDisable(false);
+            sessionButton.setDisable(false);
+            inviteButton.setDisable(false);
+            autoVoiceButton.setDisable(false);
+        } else {
+            settingsButton.setDisable(true);
+            sessionButton.setDisable(true);
+            inviteButton.setDisable(true);
+            autoVoiceButton.setDisable(true);
         }
     }
 
@@ -314,11 +363,14 @@ abstract public class AbstractSessionStage extends Stage {
         participantsList.getItems().add(user);
     }
 
-    protected void setButtonsState(String stateText, boolean enabled) {
-        settingsButton.setDisable(!enabled);
-        sessionButton.setDisable(!enabled);
-        inviteButton.setDisable(!enabled);
+    protected void setStateText(String stateText) {
         sessionButton.setText(stateText);
+    }
+
+    protected void setRequestVoiceText(String text, boolean enabled, boolean active) {
+        requestVoiceButton.setText(text);
+        requestVoiceButton.setDisable(!enabled);
+        requestVoiceButton.setSelected(active);
     }
 
     protected void setName(String name) {
@@ -392,6 +444,18 @@ abstract public class AbstractSessionStage extends Stage {
 
     protected void addImage(SessionImage img) {
         imageList.getItems().add(img);
+    }
+
+    protected void removeImage(SessionImage img) {
+        imageList.getItems().remove(img);
+
+        if (focusedImage.equals(img)) {
+            mainSplit.getItems().remove(imagePaneVBox);
+            focusedImage = null;
+            imageList.getSelectionModel().clearSelection();
+        }
+
+        addMessage(null, "Zdjęcie " + img.getName() + " zostało usunięte");
     }
 
     @FXML
@@ -488,7 +552,12 @@ abstract public class AbstractSessionStage extends Stage {
     }
 
     @FXML
-    private void onSyncToggle(ActionEvent event) {
+    private void onAutoVoicePressed(ActionEvent event) {
+
+    }
+
+    @FXML
+    private void onRequestVoiceButton(ActionEvent event) {
 
     }
 
@@ -523,6 +592,21 @@ abstract public class AbstractSessionStage extends Stage {
         imageEditor.setDefaultColor(selectColorPicker.getValue());
     }
 
+    @FXML
+    private void onImageKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.DELETE) {
+            SessionImage img = imageList.getSelectionModel().getSelectedItem();
+
+            if (img != null) {
+                onImageRemoved(img);
+            }
+        }
+    }
+
+    protected void onImageRemoved(SessionImage img) {
+
+    }
+
     protected void onImageEditorSelected(Point2D start, Point2D end, double zoom, Color defaultColor) {
     }
 
@@ -550,6 +634,10 @@ abstract public class AbstractSessionStage extends Stage {
     }
 
     protected void onUserKick(SessionUser user) {
+
+    }
+
+    protected void onVoiceUser(SessionUser user) {
 
     }
 
