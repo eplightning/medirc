@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static javax.swing.JOptionPane.YES_OPTION;
+
 /**
  * Created by EpLightning on 08.05.2016.
  */
@@ -350,8 +352,8 @@ abstract public class AbstractSessionStage extends Stage {
         imageEditor.getFragments().clear();
         imageEditor.getFragments().addAll(img.getFragments());
 
-        int dw = imageEditor.getWidth() - (int) imagePaneScroll.getWidth();
-        int dh = imageEditor.getHeight() - (int) imagePaneScroll.getHeight();
+        int dw = imageEditor.getWidth() - (int) imagePaneScroll.getWidth()+1;
+        int dh = imageEditor.getHeight() - (int) imagePaneScroll.getHeight()+1;
 
         if (dw > 0 && img.getFocusX() > 0 && img.getFocusX() < dw)
             imagePaneScroll.setHvalue((double) img.getFocusX() / dw);
@@ -616,10 +618,18 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private void onImageKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE) {
-            SessionImage img = imageList.getSelectionModel().getSelectedItem();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("UWAGA");
+            alert.setHeaderText("Potwierdzenie");
+            alert.setContentText("Czy na pewno chcesz usunąć ten obraz?");
 
-            if (img != null) {
-                onImageRemoved(img);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.OK){
+                SessionImage img = imageList.getSelectionModel().getSelectedItem();
+
+                if (img != null) {
+                    onImageRemoved(img);
+                }
             }
         }
     }
