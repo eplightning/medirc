@@ -16,3 +16,11 @@ message SessionAutoInfo {
     uint32 queuePosition = 3;
     uint32 queueUsers = 4;
 }
+
+message SessionAutoRequest {
+    uint32 id = 1;
+}
+
+message SessionAutoCancel {
+    uint32 id = 1;
+}

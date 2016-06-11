@@ -32,4 +32,9 @@ public class MemoryImage extends AbstractImage {
     public void setTransformations(ImageTransformations transformations) {
         this.transformations = transformations;
     }
+
+    @Override
+    public void updateFragments() {
+
+    }
 }

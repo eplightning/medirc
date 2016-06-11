@@ -63,6 +63,10 @@ message AddImageFragmentResponse {
     GenericResponse status = 1;
 }
 
+message ClearImageFragmentsResponse {
+    GenericResponse status = 1;
+}
+
 message RequestImageResponse {
     GenericResponse status = 1;
 

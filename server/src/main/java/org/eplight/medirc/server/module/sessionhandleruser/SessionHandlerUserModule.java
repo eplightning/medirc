@@ -212,6 +212,11 @@ public class SessionHandlerUserModule implements Module {
             sess.setState(SessionState.fromProtobuf(data.getState()));
         }
 
+        if (sess.getAutoVoice() != data.getAutoVoice()) {
+            changes = true;
+            sess.setAutoVoice(data.getAutoVoice());
+        }
+
         if (!changes)
             return;
 
@@ -287,6 +292,29 @@ public class SessionHandlerUserModule implements Module {
         logger.info("Added image fragment: `" + sess.getName() + "`");
 
         img.getFragments().add(ev.getImgFragment());
+        img.updateFragments();
+
+        SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
+        msg.setId(img.getId()).setSessionId(sess.getId());
+
+        img.getFragments().forEach(f -> msg.addFragment(f.toProtobuf()));
+
+        sess.broadcast(msg.build());
+    }
+
+    private void onClearImageFragments(ClearImageFragmentsEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Clearing image fragments: `" + sess.getName() + "`");
+
+        if (ev.getUser() == null) {
+            img.getFragments().clear();
+        } else {
+            img.getFragments().removeIf(a -> a.getUser().equals(ev.getUser()));
+        }
+
+        img.updateFragments();
 
         SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
         msg.setId(img.getId()).setSessionId(sess.getId());
@@ -320,6 +348,7 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(TransformImageSessionEvent.class, this::onTransformImage));
         loop.registerConsumer(new FunctionConsumer<>(AddImageFragmentSessionEvent.class, this::onAddImageFragment));
         loop.registerConsumer(new FunctionConsumer<>(FocusImageSessionEvent.class, this::onFocusImage));
+        loop.registerConsumer(new FunctionConsumer<>(ClearImageFragmentsEvent.class, this::onClearImageFragments));
     }
 
     @Override

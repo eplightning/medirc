@@ -66,4 +66,9 @@ public class MemorySession extends AbstractSession {
     public void kick(User user) {
         participants.remove(user);
     }
+
+    @Override
+    public void setAutoVoice(boolean setting) {
+        autoVoice = setting;
+    }
 }

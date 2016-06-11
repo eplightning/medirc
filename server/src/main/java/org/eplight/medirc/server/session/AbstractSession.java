@@ -15,6 +15,7 @@ abstract public class AbstractSession implements Session {
     protected String name;
     protected User owner;
     protected SessionState state;
+    protected boolean autoVoice;
 
     protected Set<User> participants = new HashSet<>();
     protected Map<Integer, EnumSet<SessionUserFlag>> flags = new HashMap<>();
@@ -39,6 +40,7 @@ abstract public class AbstractSession implements Session {
         SessionBasic.SessionData.Builder builder = SessionBasic.SessionData.newBuilder();
 
         builder.setName(name)
+                .setAutoVoice(autoVoice)
                 .setState(state.toProtobuf());
 
         return builder.build();
@@ -101,6 +103,11 @@ abstract public class AbstractSession implements Session {
         EnumSet<SessionUserFlag> res = flags.get(user.getId());
 
         return res != null ? res : EnumSet.noneOf(SessionUserFlag.class);
+    }
+
+    @Override
+    public boolean getAutoVoice() {
+        return autoVoice;
     }
 
     @Override

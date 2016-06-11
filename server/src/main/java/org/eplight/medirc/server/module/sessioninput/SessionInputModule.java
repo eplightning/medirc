@@ -713,6 +713,47 @@ public class SessionInputModule implements Module {
         loop.fireEvent(new AddImageFragmentSessionEvent(sess, user, img, frag));
     }
 
+    private void onClearImageFragments(ActiveUser user, SessionRequests.ClearImageFragments msg) {
+        SessionResponses.ClearImageFragmentsResponse.Builder response = SessionResponses.ClearImageFragmentsResponse
+                .newBuilder();
+
+        if (msg.getId() <= 0)
+            return;
+
+        Image img = imageManager.getImage(msg.getId());
+
+        if (img == null)
+            return;
+
+        Session sess = sessions.findById(img.getSessionId());
+
+        // not found
+        if (sess == null) {
+            response.setStatus(statusError(img.getSessionId(), "Nie udało się znaleźć sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // active?
+        if (!sess.getActiveUsers().contains(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Musisz być aktywnym użytkownikiem sesji"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        // permission to remove all
+        if (msg.getAll() && !sess.isAdmin(user)) {
+            response.setStatus(statusError(img.getSessionId(), "Nie masz uprawnień do usunięcia wszystkich fragmentów"));
+            user.getChannel().writeAndFlush(response.build());
+            return;
+        }
+
+        response.setStatus(statusSuccess(sess.getId()));
+        user.getChannel().writeAndFlush(response.build());
+
+        loop.fireEvent(new ClearImageFragmentsEvent(sess, user, img, msg.getAll() ? null : user));
+    }
+
     @Override
     public void start() {
         loop.registerConsumer(new FunctionConsumer<>(ChannelInactiveEvent.class, this::onChannelInactive));
@@ -731,6 +772,7 @@ public class SessionInputModule implements Module {
         dispatcher.register(SessionRequests.AddImageFragment.class, new AuthedMessageFunction<>(this::onAddImageFragment));
         dispatcher.register(SessionRequests.AcceptInviteRequest.class, new AuthedMessageFunction<>(this::onAcceptInvite));
         dispatcher.register(SessionRequests.DeclineInviteRequest.class, new AuthedMessageFunction<>(this::onDeclineInvite));
+        dispatcher.register(SessionRequests.ClearImageFragments.class, new AuthedMessageFunction<>(this::onClearImageFragments));
     }
 
     @Override

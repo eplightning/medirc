@@ -99,6 +99,9 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private Button focusButton;
 
+    @FXML
+    private MenuItem clearAllSelection;
+
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
         this.handshakeAck = ack;
@@ -215,11 +218,13 @@ abstract public class AbstractSessionStage extends Stage {
             sessionButton.setDisable(false);
             inviteButton.setDisable(false);
             autoVoiceButton.setDisable(false);
+            clearAllSelection.setDisable(false);
         } else {
             settingsButton.setDisable(true);
             sessionButton.setDisable(true);
             inviteButton.setDisable(true);
             autoVoiceButton.setDisable(true);
+            clearAllSelection.setDisable(true);
         }
     }
 
@@ -371,6 +376,10 @@ abstract public class AbstractSessionStage extends Stage {
         requestVoiceButton.setText(text);
         requestVoiceButton.setDisable(!enabled);
         requestVoiceButton.setSelected(active);
+    }
+
+    protected void setAutoVoiceButtonState(boolean selected) {
+        autoVoiceButton.setSelected(selected);
     }
 
     protected void setName(String name) {
@@ -553,12 +562,22 @@ abstract public class AbstractSessionStage extends Stage {
 
     @FXML
     private void onAutoVoicePressed(ActionEvent event) {
+        boolean selected = autoVoiceButton.isSelected();
 
+        // narazie maskuje zmiany, bo to serwer nas powiadomi czy zaszła ..
+        autoVoiceButton.setSelected(!selected);
+
+        onChangeAutoVoice(selected);
     }
 
     @FXML
     private void onRequestVoiceButton(ActionEvent event) {
+        boolean selected = requestVoiceButton.isSelected();
 
+        // narazie maskuje zmiany, bo to serwer nas powiadomi czy zaszła ..
+        requestVoiceButton.setSelected(!selected);
+
+        onRequestVoice(selected);
     }
 
     @FXML
@@ -579,12 +598,14 @@ abstract public class AbstractSessionStage extends Stage {
 
     @FXML
     private void onClearMySelection(ActionEvent event) {
-
+        if (focusedImage != null)
+            onClearImageFragments(false);
     }
 
     @FXML
     private void onClearAllSelection(ActionEvent event) {
-
+        if (focusedImage != null)
+            onClearImageFragments(true);
     }
 
     @FXML
@@ -601,6 +622,18 @@ abstract public class AbstractSessionStage extends Stage {
                 onImageRemoved(img);
             }
         }
+    }
+
+    protected void onChangeAutoVoice(boolean enabled) {
+
+    }
+
+    protected void onRequestVoice(boolean enabled) {
+
+    }
+
+    protected void onClearImageFragments(boolean all) {
+
     }
 
     protected void onImageRemoved(SessionImage img) {

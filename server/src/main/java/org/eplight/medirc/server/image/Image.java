@@ -26,4 +26,6 @@ public interface Image {
     void setName(String name);
     void setColor(ImageColor color);
     void setTransformations(ImageTransformations transformations);
+
+    void updateFragments();
 }

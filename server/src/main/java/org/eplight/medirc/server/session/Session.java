@@ -36,8 +36,10 @@ public interface Session {
     String getName();
     int getId();
     SessionState getState();
+    boolean getAutoVoice();
 
     EnumSet<SessionUserFlag> getFlags(User user);
     void setFlags(User user, EnumSet<SessionUserFlag> flags);
     void setState(SessionState state);
+    void setAutoVoice(boolean setting);
 }

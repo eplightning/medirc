@@ -68,6 +68,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         dispatcher.register(SessionEvents.ImageFragmentsChanged.class, new JavaFxDispatchFunction<>(this::onImageFragmentsChanged));
         dispatcher.register(SessionEvents.ImageFocus.class, new JavaFxDispatchFunction<>(this::onImageFocus));
         dispatcher.register(SessionEvents.ImageRemoved.class, new JavaFxDispatchFunction<>(this::onImageRemove));
+        dispatcher.register(SessionAuto.SessionAutoInfo.class, new JavaFxDispatchFunction<>(this::onSessionAutoInfo));
 
         // błędy, do zastąpienia
         dispatcher.register(SessionResponses.InviteUserResponse.class,
@@ -86,18 +87,39 @@ public class ActiveSessionStage extends AbstractSessionStage {
                 new GenericStatusDispatchFunction(this::genericError));
         dispatcher.register(SessionResponses.RemoveImageResponse.class,
                 new GenericStatusDispatchFunction(this::genericError));
+        dispatcher.register(SessionResponses.ClearImageFragmentsResponse.class,
+                new GenericStatusDispatchFunction(this::genericError));
+    }
+
+    private void onSessionAutoInfo(SessionAuto.SessionAutoInfo msg) {
+        if (msg.getId() != this.id)
+            return;
+
+        autoInfo = msg;
+
+        // ZAKŁADAMY ŻE JESLI PRZYJDZIE TA WIADOMOSC TO AUTOMAT JEST WLACZONY
+        updateAutoData(true);
     }
 
     private void onImageFocus(SessionEvents.ImageFocus msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         focusImage(msg.getId());
     }
 
     private void onImageTransformed(SessionEvents.ImageTransformed msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         updateImageTransform(msg.getId(), msg.getTransformations().getZoom(), msg.getTransformations().getFocusX(),
                 msg.getTransformations().getFocusY());
     }
 
     private void onImageFragmentsChanged(SessionEvents.ImageFragmentsChanged msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         updateImageFragments(msg.getId(), fragmentsFromProtobuf(msg.getFragmentList()));
     }
 
@@ -121,11 +143,17 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onImageAdded(SessionEvents.ImageAdded img) {
+        if (img.getSessionId() != this.id)
+            return;
+
         connection.writeAndFlush(SessionRequests.RequestImage.newBuilder().setId(img.getId()).build());
         addImageInfo(img.getName());
     }
 
     private void onImageDownload(SessionResponses.RequestImageResponse img) {
+        if (img.getStatus().getSessionId() != this.id)
+            return;
+
         if (!img.getStatus().getSuccess())
             return;
 
@@ -135,6 +163,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onImageRemove(SessionEvents.ImageRemoved img) {
+        if (img.getSessionId() != this.id)
+            return;
+
         removeImage(new SessionImage(img.getId(), img.getName()));
     }
 
@@ -166,6 +197,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onUserUpdated(SessionEvents.UserUpdated msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         updateUser(new SessionUser(msg.getUser()));
 
         if (msg.getUser().getId() == handshakeAck.getId()) {
@@ -174,14 +208,23 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onParted(SessionEvents.Parted msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         partUser(new SessionUser(msg.getUser()));
     }
 
     private void onKicked(SessionEvents.Kicked msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         kickUser(new SessionUser(msg.getUser()), msg.getReason());
     }
 
     private void genericError(SessionResponses.GenericResponse msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         if (!msg.getSuccess())
             addMessage(null, "Błąd: " + msg.getError());
     }
@@ -213,18 +256,29 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onJoined(SessionEvents.Joined msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         joinUser(new SessionUser(msg.getUser()));
     }
 
     private void onNewParticipant(SessionEvents.NewParticipant msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         inviteUser(new SessionUser(msg.getUser()));
     }
 
     private void onUserMessage(SessionEvents.UserMessage msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         addMessage(new SessionUser(msg.getUser()), msg.getText());
     }
 
     private void updateAutoData(boolean enabled) {
+        setAutoVoiceButtonState(enabled);
+
         if (enabled) {
             if (autoInfo != null) {
                 switch (autoInfo.getState()) {
@@ -249,6 +303,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
     }
 
     private void onSettingsChanged(SessionEvents.SettingsChanged msg) {
+        if (msg.getSessionId() != this.id)
+            return;
+
         if (!msg.getData().getName().equals(data.getName())) {
             setName(msg.getData().getName());
         }
@@ -259,7 +316,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
         }
 
         if (msg.getData().getAutoVoice() != data.getAutoVoice()) {
-            updateAutoData(data.getAutoVoice());
+            updateAutoData(msg.getData().getAutoVoice());
         }
 
         if (msg.getData().getState() == Main.Session.State.Finished) {
@@ -416,5 +473,42 @@ public class ActiveSessionStage extends AbstractSessionStage {
         b.setId(img.getId());
 
         connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onClearImageFragments(boolean all) {
+        SessionRequests.ClearImageFragments.Builder b = SessionRequests.ClearImageFragments.newBuilder();
+
+        b.setId(focusedImage.getId());
+        b.setAll(all);
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onChangeAutoVoice(boolean enabled) {
+        SessionRequests.ChangeSettings.Builder b = SessionRequests.ChangeSettings.newBuilder()
+                .setSessionId(id);
+
+        b.setData(data.toBuilder().setAutoVoice(enabled));
+
+        connection.writeAndFlush(b.build());
+    }
+
+    @Override
+    protected void onRequestVoice(boolean enabled) {
+        if (enabled) {
+            SessionAuto.SessionAutoRequest.Builder b = SessionAuto.SessionAutoRequest.newBuilder();
+
+            b.setId(id);
+
+            connection.writeAndFlush(b.build());
+        } else {
+            SessionAuto.SessionAutoCancel.Builder b = SessionAuto.SessionAutoCancel.newBuilder();
+
+            b.setId(id);
+
+            connection.writeAndFlush(b.build());
+        }
     }
 }
