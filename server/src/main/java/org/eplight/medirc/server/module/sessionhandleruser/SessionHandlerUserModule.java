@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionBasic;
 import org.eplight.medirc.protocol.SessionEvents;
+import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.events.session.*;
@@ -38,13 +39,37 @@ public class SessionHandlerUserModule implements Module {
     @Inject
     private ActiveSessionsManager activeSessionsManager;
 
+    private void sendSessionUpdate(Session sess) {
+        Set<ActiveUser> affectedUsers = users.values().stream()
+                .filter(a -> sess.getParticipants().contains(a) || sess.getOwner().equals(a))
+                .collect(Collectors.toSet());
+
+        for (ActiveUser u : affectedUsers) {
+            u.getChannel().writeAndFlush(
+                    Main.SessionUpdated.newBuilder()
+                            .setSession(sess.buildMessage(u))
+                            .build()
+            );
+        }
+    }
+
     private void onChangeFlags(ChangeFlagsSessionEvent ev) {
         Session sess = ev.getSession();
         User user = ev.getUser();
 
         logger.info("Changing flags for user `" + user.getName() +"` in `" + sess.getName() + "`");
 
+        boolean userNeedRefresh = sess.getFlags(user).contains(SessionUserFlag.Invited)
+                && !ev.getFlags().contains(SessionUserFlag.Invited);
+
         sess.setFlags(user, ev.getFlags());
+
+        if (userNeedRefresh && users.containsKey(user.getId())) {
+            ActiveUser activeUser = users.get(user.getId());
+
+            activeUser.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder()
+                    .setSession(sess.buildMessage(user)));
+        }
 
         SessionEvents.UserUpdated.Builder msg = SessionEvents.UserUpdated.newBuilder()
                 .setSessionId(sess.getId())
@@ -59,7 +84,6 @@ public class SessionHandlerUserModule implements Module {
 
         logger.info("Inviting user `" + invited.getName() +"` to `" + sess.getName() + "`");
 
-        // TODO: Prawdziwy system zaproszeń
         sess.invite(invited);
 
         SessionEvents.NewParticipant.Builder msg = SessionEvents.NewParticipant.newBuilder()
@@ -68,17 +92,14 @@ public class SessionHandlerUserModule implements Module {
 
         sess.broadcast(msg.build());
 
-        // sesja aktywna?
-        if (sess.getState() == SessionState.Started) {
-            // aktywny?
-            if (users.containsKey(invited.getId())) {
-                ActiveUser activeInvited = users.get(invited.getId());
+        // aktywny?
+        if (users.containsKey(invited.getId())) {
+            ActiveUser activeInvited = users.get(invited.getId());
 
-                Main.SessionInvite.Builder msg2 = Main.SessionInvite.newBuilder()
-                        .setSession(sess.buildMessage(activeInvited));
+            Main.SessionInvite.Builder msg2 = Main.SessionInvite.newBuilder()
+                    .setSession(sess.buildMessage(activeInvited));
 
-                activeInvited.getChannel().writeAndFlush(msg2.build());
-            }
+            activeInvited.getChannel().writeAndFlush(msg2.build());
         }
     }
 
@@ -96,9 +117,7 @@ public class SessionHandlerUserModule implements Module {
 
         sess.broadcast(msg.build());
 
-        sess.getActiveUsers().forEach(u -> {
-            u.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(u)));
-        });
+        sendSessionUpdate(sess);
     }
 
     private void onKick(KickSessionEvent ev) {
@@ -111,6 +130,7 @@ public class SessionHandlerUserModule implements Module {
 
         SessionEvents.Kicked.Builder msg = SessionEvents.Kicked.newBuilder()
                 .setSessionId(sess.getId())
+                .setReason(ev.getReason().toProtobuf())
                 .setUser(user.buildSessionUserMessage(sess.getFlags(user)));
 
         sess.broadcast(msg.build());
@@ -124,7 +144,8 @@ public class SessionHandlerUserModule implements Module {
 
             activeKicked.getChannel().writeAndFlush(msg2.build());
 
-            loop.fireEvent(new PartSessionEvent(sess, ev.getCause(), "Wyrzucony", activeKicked));
+            if (sess.getActiveUsers().contains(activeKicked))
+                loop.fireEvent(new PartSessionEvent(sess, ev.getCause(), "Wyrzucony", activeKicked));
         }
     }
 
@@ -169,13 +190,7 @@ public class SessionHandlerUserModule implements Module {
 
         sess.broadcast(msg.build());
 
-        sess.getActiveUsers().forEach(u -> {
-            u.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(u)));
-        });
-
-        // don't send it to kicked person
-        if (sess.isAllowedToJoin(user))
-            user.getChannel().writeAndFlush(Main.SessionUpdated.newBuilder().setSession(sess.buildMessage(user)));
+        sendSessionUpdate(sess);
     }
 
     private void onSettings(SettingsSessionEvent ev) {
@@ -197,6 +212,11 @@ public class SessionHandlerUserModule implements Module {
             sess.setState(SessionState.fromProtobuf(data.getState()));
         }
 
+        if (sess.getAutoVoice() != data.getAutoVoice()) {
+            changes = true;
+            sess.setAutoVoice(data.getAutoVoice());
+        }
+
         if (!changes)
             return;
 
@@ -207,38 +227,7 @@ public class SessionHandlerUserModule implements Module {
         sess.broadcast(msg);
 
         // session list update for participants
-        Set<ActiveUser> affectedUsers = users.values().stream()
-                .filter(a -> sess.getParticipants().contains(a))
-                .collect(Collectors.toSet());
-
-        if (oldState == SessionState.SettingUp && sess.getState() == SessionState.Started) {
-            for (ActiveUser u : affectedUsers) {
-                u.getChannel().writeAndFlush(
-                        Main.SessionInvite.newBuilder()
-                        .setSession(sess.buildMessage(u))
-                        .build()
-                );
-            }
-        } else {
-            for (ActiveUser u : affectedUsers) {
-                u.getChannel().writeAndFlush(
-                        Main.SessionUpdated.newBuilder()
-                        .setSession(sess.buildMessage(u))
-                        .build()
-                );
-            }
-        }
-
-        // session list update for owner
-        ActiveUser owner = users.get(sess.getOwner().getId());
-
-        if (owner != null) {
-            owner.getChannel().writeAndFlush(
-                    Main.SessionUpdated.newBuilder()
-                    .setSession(sess.buildMessage(owner))
-                    .build()
-            );
-        }
+        sendSessionUpdate(sess);
 
         // TODO: Handle moving active session to archived sessions container
         if (oldState == SessionState.Started && sess.getState() == SessionState.Finished) {
@@ -256,6 +245,9 @@ public class SessionHandlerUserModule implements Module {
                 .setSessionId(sess.getId())
                 .setName(img.getName())
                 .setId(img.getId())
+                .setColorG(img.getColor().getG())
+                .setColorB(img.getColor().getB())
+                .setColorR(img.getColor().getR())
                 .build();
 
         sess.broadcast(msg);
@@ -270,9 +262,76 @@ public class SessionHandlerUserModule implements Module {
         SessionEvents.ImageRemoved msg = SessionEvents.ImageRemoved.newBuilder()
                 .setSessionId(sess.getId())
                 .setId(img.getId())
+                .setName(img.getName())
                 .build();
 
         sess.broadcast(msg);
+    }
+
+    private void onTransformImage(TransformImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image transformed: `" + sess.getName() + "`");
+
+        img.setTransformations(ev.getTransformations());
+
+        SessionEvents.ImageTransformed msg = SessionEvents.ImageTransformed.newBuilder()
+                .setSessionId(sess.getId())
+                .setId(img.getId())
+                .setTransformations(img.getTransformations().toProtobuf())
+                .build();
+
+        sess.broadcast(msg);
+    }
+
+    private void onAddImageFragment(AddImageFragmentSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Added image fragment: `" + sess.getName() + "`");
+
+        img.getFragments().add(ev.getImgFragment());
+        img.updateFragments();
+
+        SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
+        msg.setId(img.getId()).setSessionId(sess.getId());
+
+        img.getFragments().forEach(f -> msg.addFragment(f.toProtobuf()));
+
+        sess.broadcast(msg.build());
+    }
+
+    private void onClearImageFragments(ClearImageFragmentsEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Clearing image fragments: `" + sess.getName() + "`");
+
+        if (ev.getUser() == null) {
+            img.getFragments().clear();
+        } else {
+            img.getFragments().removeIf(a -> a.getUser().equals(ev.getUser()));
+        }
+
+        img.updateFragments();
+
+        SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
+        msg.setId(img.getId()).setSessionId(sess.getId());
+
+        img.getFragments().forEach(f -> msg.addFragment(f.toProtobuf()));
+
+        sess.broadcast(msg.build());
+    }
+
+    private void onFocusImage(FocusImageSessionEvent ev) {
+        Session sess = ev.getSession();
+        Image img = ev.getImg();
+
+        logger.info("Image focused: `" + sess.getName() + "`");
+
+        sess.broadcast(SessionEvents.ImageFocus
+                .newBuilder().setId(img.getId()).setSessionId(sess.getId()).build());
     }
 
     @Override
@@ -286,6 +345,10 @@ public class SessionHandlerUserModule implements Module {
         loop.registerConsumer(new FunctionConsumer<>(SettingsSessionEvent.class, this::onSettings));
         loop.registerConsumer(new FunctionConsumer<>(UploadImageSessionEvent.class, this::onUploadImage));
         loop.registerConsumer(new FunctionConsumer<>(RemoveImageSessionEvent.class, this::onRemoveImage));
+        loop.registerConsumer(new FunctionConsumer<>(TransformImageSessionEvent.class, this::onTransformImage));
+        loop.registerConsumer(new FunctionConsumer<>(AddImageFragmentSessionEvent.class, this::onAddImageFragment));
+        loop.registerConsumer(new FunctionConsumer<>(FocusImageSessionEvent.class, this::onFocusImage));
+        loop.registerConsumer(new FunctionConsumer<>(ClearImageFragmentsEvent.class, this::onClearImageFragments));
     }
 
     @Override

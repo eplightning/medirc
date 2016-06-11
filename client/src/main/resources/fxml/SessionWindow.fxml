@@ -1,83 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="742.0" prefWidth="1028.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <ListView fx:id="imageList" orientation="HORIZONTAL" prefHeight="136.0" prefWidth="956.0">
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </ListView>
-      <SplitPane dividerPositions="0.8" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-        <items>
-            <VBox>
-               <children>
-                  <ToolBar prefHeight="40.0" prefWidth="200.0">
-                    <items>
-                      <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Dodaj zdjęcie" />
-                        <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Zaproś" />
-                        <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Rozpocznij sesję" />
-                    </items>
-                  </ToolBar>
-                  <ScrollPane fx:id="chatScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
-                     <content>
-                        <TextFlow fx:id="chatView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+<SplitPane fx:id="mainSplit" dividerPositions="1.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+   <items>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="742.0" prefWidth="1028.0">
+         <children>
+            <ListView fx:id="imageList" onMouseClicked="#onImageClicked" onKeyPressed="#onImageKeyPressed" orientation="HORIZONTAL" prefHeight="136.0" prefWidth="956.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </ListView>
+            <SplitPane dividerPositions="0.8" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+              <items>
+                  <VBox>
+                     <children>
+                        <ToolBar prefHeight="40.0" prefWidth="200.0">
+                          <items>
+                            <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Dodaj zdjęcie" />
+                              <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Zaproś" />
+                              <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Rozpocznij sesję" />
+                              <ToggleButton fx:id="autoVoiceButton" mnemonicParsing="false" onAction="#onAutoVoicePressed" text="Automatyczny głos" />
+                          </items>
+                        </ToolBar>
+                        <ScrollPane fx:id="chatScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
+                           <content>
+                              <TextFlow fx:id="chatView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                              </TextFlow>
+                           </content>
+                        </ScrollPane>
+                        <HBox>
+                           <children>
+                              <TextArea fx:id="textInput" onKeyPressed="#onKeyPressed" prefHeight="118.0" prefWidth="624.0" wrapText="true" HBox.hgrow="ALWAYS" />
+                              <AnchorPane>
+                                 <HBox.margin>
+                                    <Insets left="20.0" />
+                                 </HBox.margin>
+                                 <children>
+                                    <Button fx:id="sendButton" alignment="CENTER" mnemonicParsing="false" onAction="#onSendButtonPressed" text="Wyślij" AnchorPane.bottomAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                           </children>
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
-                        </TextFlow>
-                     </content>
-                  </ScrollPane>
-                  <HBox>
-                     <children>
-                        <TextArea fx:id="textInput" onKeyPressed="#onKeyPressed" prefHeight="118.0" prefWidth="624.0" wrapText="true" HBox.hgrow="ALWAYS" />
-                        <AnchorPane>
-                           <HBox.margin>
-                              <Insets left="20.0" />
-                           </HBox.margin>
-                           <children>
-                              <Button fx:id="sendButton" alignment="CENTER" mnemonicParsing="false" onAction="#onSendButtonPressed" text="Wyślij" AnchorPane.bottomAnchor="0.0" />
-                           </children>
-                        </AnchorPane>
+                        </HBox>
                      </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </HBox>
-               </children>
-            </VBox>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-               <children>
-                  <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <tabs>
-                        <Tab closable="false" text="Aktywni">
-                           <content>
-                              <ListView fx:id="userList" prefHeight="487.0" prefWidth="195.0" />
-                           </content>
-                        </Tab>
-                        <Tab closable="false" text="Zaproszeni">
-                           <content>
-                              <ListView fx:id="participantsList" prefHeight="487.0" prefWidth="195.0" />
-                           </content>
-                        </Tab>
-                     </tabs>
-                  </TabPane>
-               </children>
-            </AnchorPane>
-        </items>
-      </SplitPane>
-   </children>
-</VBox>
+                  </VBox>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <tabs>
+                              <Tab closable="false" text="Aktywni">
+                                 <content>
+                                    <ListView fx:id="userList" prefHeight="487.0" prefWidth="195.0" />
+                                 </content>
+                              </Tab>
+                              <Tab closable="false" text="Zaproszeni">
+                                 <content>
+                                    <ListView fx:id="participantsList" prefHeight="487.0" prefWidth="195.0" />
+                                 </content>
+                              </Tab>
+                           </tabs>
+                        </TabPane>
+                     </children>
+                  </AnchorPane>
+              </items>
+            </SplitPane>
+         </children>
+      </VBox>
+      <VBox fx:id="imagePaneVBox">
+         <children>
+            <ToolBar prefHeight="40.0" prefWidth="200.0">
+              <items>
+                  <ToggleButton fx:id="requestVoiceButton" disable="true" mnemonicParsing="false" onAction="#onRequestVoiceButton" text="Poproś o głos" />
+                  <!--<ToggleButton fx:id="syncToggle" mnemonicParsing="false" onAction="#onSyncToggle" text="Synchronizacja" />-->
+                  <Button fx:id="focusButton" mnemonicParsing="false" onAction="#onFocusButton" text="Uwaga" />
+                  <MenuButton mnemonicParsing="false" text="Czyszczenie">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#onClearMySelection" text="Usuń moje zaznaczenia" />
+                      <MenuItem fx:id="clearAllSelection" disable="true" mnemonicParsing="false" onAction="#onClearAllSelection" text="Usuń wszystkie zaznaczenia" />
+                    </items>
+                  </MenuButton>
+                  <ColorPicker fx:id="selectColorPicker" onAction="#onSelectColorPicked" promptText="Kolor zaznaczenia" />
+              </items>
+            </ToolBar>
+            <ScrollPane fx:id="imagePaneScroll" fitToHeight="true" pannable="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0">
+                     <children>
+                        <Canvas height="200.0" width="200.0" />
+                        <ImageView pickOnBounds="true" preserveRatio="true" />
+                     </children>
+                  </AnchorPane>
+              </content>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </items>
+</SplitPane>

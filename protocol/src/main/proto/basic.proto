@@ -18,6 +18,7 @@ message HandshakeAck {
     bool success = 1;
     string errorMessage = 2;
     string name = 3;
+    uint32 id = 4;
 }
 
 message SimpleCredentials {

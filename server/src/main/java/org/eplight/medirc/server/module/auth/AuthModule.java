@@ -98,6 +98,7 @@ public class AuthModule implements Module {
 
         ack.setSuccess(true);
         ack.setName(usr.getName());
+        ack.setId(id);
         channel.writeAndFlush(ack.build());
 
         logger.info("User successfully logged in: " + usr.getName());

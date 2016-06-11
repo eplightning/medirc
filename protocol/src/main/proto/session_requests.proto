@@ -11,6 +11,16 @@ message JoinRequest {
     uint32 id = 1;
 }
 
+// Zaproszenia
+// bez odpowiedzi serwera
+message AcceptInviteRequest {
+    uint32 id = 1;
+}
+
+message DeclineInviteRequest {
+    uint32 id = 1;
+}
+
 // Informacja o wyjściu z sesji
 // bez odpowiedzi serwera
 message PartRequest {
@@ -43,7 +53,9 @@ message KickUser {
 message ChangeUserFlags {
     uint32 sessionId = 1;
     uint32 userId = 2;
-    int32 flags = 3;
+    int32 flagsAdd = 3;
+    int32 flagsRemove = 4;
+    int32 flagsSwap = 5;
 }
 
 // Wrzucenie obrazka
@@ -56,6 +68,23 @@ message UploadImage {
 // Usunięcie obrazka
 message RemoveImage {
     uint32 id = 1;
+}
+
+// Zmiana obrazka
+message TransformImage {
+    uint32 id = 1;
+    ImageTransformations transformations = 2;
+    bool focusImage = 3;
+}
+
+message AddImageFragment {
+    uint32 id = 1;
+    ImageFragment fragment = 2;
+}
+
+message ClearImageFragments {
+    uint32 id = 1;
+    bool all = 2;
 }
 
 //

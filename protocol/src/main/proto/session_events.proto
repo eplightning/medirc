@@ -49,6 +49,14 @@ message NewParticipant {
 message Kicked {
     uint32 sessionId = 1;
     SessionUser user = 2;
+
+    enum Reason {
+        Unknown = 0;
+        Kick = 1;
+        Declined = 2;
+    }
+
+    Reason reason = 3;
 }
 
 // Zmiany uzytkownika (najpewniej flagi)
@@ -68,13 +76,39 @@ message ImageAdded {
     uint32 sessionId = 1;
     uint32 id = 2;
     string name = 3;
+    double colorR = 4;
+    double colorG = 5;
+    double colorB = 6;
 }
 
 // Obrazek usuniety
 message ImageRemoved {
     uint32 sessionId = 1;
     uint32 id = 2;
+    string name = 3;
 }
+
+// Obrazek przekształcony
+message ImageTransformed {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+    ImageTransformations transformations = 3;
+}
+
+// Prośba o focus obrazka
+message ImageFocus {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+}
+
+// Obrazek ma zmienione zaznaczenia
+message ImageFragmentsChanged {
+    uint32 sessionId = 1;
+    uint32 id = 2;
+    repeated ImageFragment fragment = 3;
+}
+
+// Prośba o skupienie
 
 // Zmiana ustawien sesji
 message SettingsChanged {

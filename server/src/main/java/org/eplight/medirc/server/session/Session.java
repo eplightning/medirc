@@ -25,6 +25,7 @@ public interface Session {
     void invite(User user);
     void kick(User user);
     boolean isAllowedToJoin(User user);
+    boolean isAllowedToSee(User user);
     boolean isAdmin(User user);
 
     void setName(String name);
@@ -35,8 +36,10 @@ public interface Session {
     String getName();
     int getId();
     SessionState getState();
+    boolean getAutoVoice();
 
     EnumSet<SessionUserFlag> getFlags(User user);
     void setFlags(User user, EnumSet<SessionUserFlag> flags);
     void setState(SessionState state);
+    void setAutoVoice(boolean setting);
 }

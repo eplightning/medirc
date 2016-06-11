@@ -58,10 +58,17 @@ public class MemorySession extends AbstractSession {
             return;
 
         participants.add(user);
+
+        flags.put(user.getId(), EnumSet.of(SessionUserFlag.Invited));
     }
 
     @Override
     public void kick(User user) {
         participants.remove(user);
+    }
+
+    @Override
+    public void setAutoVoice(boolean setting) {
+        autoVoice = setting;
     }
 }

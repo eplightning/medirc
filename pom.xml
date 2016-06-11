@@ -27,6 +27,8 @@
         <log4j.version>2.5</log4j.version>
         <netty.version>4.0.35.Final</netty.version>
         <guice.version>4.0</guice.version>
+        <imgscalr-lib.version>4.2</imgscalr-lib.version>
+        <sqlite-jdbc.version>3.8.11.2</sqlite-jdbc.version>
     </properties>
 
     <build>
@@ -53,6 +55,11 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>${sqlite-jdbc.version}</version>
         </dependency>
     </dependencies>
 

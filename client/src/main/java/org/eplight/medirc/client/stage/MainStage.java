@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MainStage extends Stage {
 
@@ -68,8 +69,8 @@ public class MainStage extends Stage {
         setWidth(1024);
         setHeight(800);
 
-        activeSessions.setCellFactory(param -> new SessionCell());
-        archivedSessions.setCellFactory(param -> new SessionCell());
+        activeSessions.setCellFactory(param -> new SessionCell(this::onAcceptInvite, this::onDeclineInvite));
+        archivedSessions.setCellFactory(param -> new SessionCell(this::onAcceptInvite, this::onDeclineInvite));
 
         activeSessions.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -95,6 +96,16 @@ public class MainStage extends Stage {
         dispatcher.register(SessionResponses.JoinResponse.class, new JavaFxDispatchFunction<>(this::onJoinResponse));
 
         connection.writeAndFlush(Main.SyncRequest.newBuilder().build());
+    }
+
+    private void onAcceptInvite(Session session) {
+        if (session.isInvited())
+            connection.writeAndFlush(SessionRequests.AcceptInviteRequest.newBuilder().setId(session.getId()).build());
+    }
+
+    private void onDeclineInvite(Session session) {
+        if (session.isInvited())
+            connection.writeAndFlush(SessionRequests.DeclineInviteRequest.newBuilder().setId(session.getId()).build());
     }
 
     @FXML

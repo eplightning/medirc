@@ -3,27 +3,37 @@ package org.eplight.medirc.client.stage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 import org.eplight.medirc.client.components.session.ImageCell;
+import org.eplight.medirc.client.components.session.ImageEditor;
+import org.eplight.medirc.client.data.AllowedActions;
 import org.eplight.medirc.client.data.SessionImage;
 import org.eplight.medirc.client.data.SessionUser;
+import org.eplight.medirc.client.image.ImageFragment;
 import org.eplight.medirc.protocol.Basic;
 import org.eplight.medirc.protocol.Main;
+import org.eplight.medirc.protocol.SessionEvents;
+import org.eplight.medirc.protocol.SessionUserFlag;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -34,6 +44,9 @@ abstract public class AbstractSessionStage extends Stage {
 
     protected Consumer<AbstractSessionStage> onCloseRun;
     protected Basic.HandshakeAck handshakeAck;
+
+    private ImageEditor imageEditor;
+    protected SessionImage focusedImage;
 
     @FXML
     private TextArea textInput;
@@ -65,15 +78,37 @@ abstract public class AbstractSessionStage extends Stage {
     @FXML
     private ListView<SessionImage> imageList;
 
-    private ContextMenu activeUserContext;
-    private ContextMenu participantContext;
+    @FXML
+    private SplitPane mainSplit;
+
+    @FXML
+    private VBox imagePaneVBox;
+
+    @FXML
+    private ScrollPane imagePaneScroll;
+
+    @FXML
+    private ColorPicker selectColorPicker;
+
+    @FXML
+    private ToggleButton autoVoiceButton;
+
+    @FXML
+    private ToggleButton requestVoiceButton;
+
+    @FXML
+    private Button focusButton;
+
+    @FXML
+    private MenuItem clearAllSelection;
 
     public AbstractSessionStage(Consumer<AbstractSessionStage> onCloseRun, Basic.HandshakeAck ack) {
         this.onCloseRun = onCloseRun;
         this.handshakeAck = ack;
     }
 
-    protected void setupWindow(String sessionName) {
+    protected void setupWindow(String sessionName, String username) {
+        // wczytanie FXML-a
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SessionWindow.fxml"));
         loader.setController(this);
 
@@ -84,50 +119,113 @@ abstract public class AbstractSessionStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Sesja - " + sessionName + " (Użytkownik: " + handshakeAck.getName() + ")");
+        // właściwości okna
+        setTitle("Sesja - " + sessionName + " (Użytkownik: " + username + ")");
         setWidth(1024);
         setHeight(742);
-
-        imageList.setCellFactory(sessionImageListView -> new ImageCell(sessionImageListView));
-
         setOnCloseRequest(this::onCloseRequest);
 
-        activeUserContext = new ContextMenu();
+        // ustawianie widoku obrazka
+        mainSplit.getItems().remove(imagePaneVBox);
+        imageEditor = new ImageEditor();
+        imagePaneScroll.setContent(imageEditor);
 
-        MenuItem kick = new MenuItem("Wyrzuć");
-        activeUserContext.getItems().add(kick);
+        imageEditor.addSelectionHandler(this::onImageEditorSelected);
+        imageEditor.addZoomHandler(this::onImageEditorZoom);
 
-        participantContext = new ContextMenu();
-        MenuItem kick2 = new MenuItem("Wyrzuć");
-        participantContext.getItems().add(kick2);
+        // lista obrazków
+        imageList.setCellFactory(ImageCell::new);
 
-        kick.setOnAction(event -> {
+        // menu kontekstowe
+        userList.setContextMenu(new ContextMenu());
+        participantsList.setContextMenu(new ContextMenu());
+
+        MenuItem activeKick = new MenuItem("Wyrzuć");
+        activeKick.setId("kick");
+
+        MenuItem participantKick = new MenuItem("Wyrzuć");
+        participantKick.setId("kick-participant");
+
+        MenuItem activeVoice = new MenuItem("Nadaj/odebraj głos");
+        activeVoice.setId("voice");
+
+        MenuItem participantVoice = new MenuItem("Nadaj/odebraj głos");
+        participantVoice.setId("voice-participant");
+
+        userList.getContextMenu().getItems().addAll(activeKick, activeVoice);
+        participantsList.getContextMenu().getItems().addAll(participantKick, participantVoice);
+
+        // akcje dla menu kontekstowych
+        activeKick.setOnAction(event -> {
             SessionUser user = userList.getSelectionModel().getSelectedItem();
 
             if (user != null)
                 onUserKick(user);
         });
 
-        kick2.setOnAction(event -> {
+        participantKick.setOnAction(event -> {
             SessionUser user = participantsList.getSelectionModel().getSelectedItem();
 
             if (user != null)
                 onUserKick(user);
         });
+
+        activeVoice.setOnAction(event -> {
+            SessionUser user = userList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onVoiceUser(user);
+        });
+
+        participantVoice.setOnAction(event -> {
+            SessionUser user = participantsList.getSelectionModel().getSelectedItem();
+
+            if (user != null)
+                onVoiceUser(user);
+        });
     }
 
-    protected void enableContextMenu(boolean enabled) {
-        if (enabled) {
-            userList.setContextMenu(activeUserContext);
-            participantsList.setContextMenu(participantContext);
-        } else {
-            userList.setContextMenu(null);
-            participantsList.setContextMenu(null);
+    protected void setAllowedActions(EnumSet<AllowedActions> actions) {
+        for (MenuItem i : userList.getContextMenu().getItems()) {
+            switch (i.getId()) {
+                case "kick":
+                    i.setDisable(!actions.contains(AllowedActions.Kick));
+                    break;
+
+                case "voice":
+                    i.setDisable(!actions.contains(AllowedActions.Settings));
+                    break;
+            }
         }
-    }
 
-    protected void onUserKick(SessionUser user) {
+        for (MenuItem i : participantsList.getContextMenu().getItems()) {
+            switch (i.getId()) {
+                case "kick-participant":
+                    i.setDisable(!actions.contains(AllowedActions.Kick));
+                    break;
 
+                case "voice-participant":
+                    i.setDisable(!actions.contains(AllowedActions.Settings));
+                    break;
+            }
+        }
+
+        imageEditor.setEditable(actions.contains(AllowedActions.Image));
+        focusButton.setDisable(!actions.contains(AllowedActions.Image));
+
+        if (actions.contains(AllowedActions.Settings)) {
+            settingsButton.setDisable(false);
+            sessionButton.setDisable(false);
+            inviteButton.setDisable(false);
+            autoVoiceButton.setDisable(false);
+            clearAllSelection.setDisable(false);
+        } else {
+            settingsButton.setDisable(true);
+            sessionButton.setDisable(true);
+            inviteButton.setDisable(true);
+            autoVoiceButton.setDisable(true);
+            clearAllSelection.setDisable(true);
+        }
     }
 
     protected void addActiveUser(SessionUser user) {
@@ -147,21 +245,162 @@ abstract public class AbstractSessionStage extends Stage {
     protected void updateUser(SessionUser user) {
         int index = userList.getItems().indexOf(user);
 
+        SessionUser oldUser = null;
+
         if (index != -1) {
+            oldUser = userList.getItems().get(index);
             userList.getItems().set(index, user);
         }
 
         index = participantsList.getItems().indexOf(user);
 
         if (index != -1) {
+            oldUser = participantsList.getItems().get(index);
             participantsList.getItems().set(index, user);
         }
 
-        addMessage(null, user.getName() + " został zaaktualizowany");
+        if (oldUser != null) {
+            if (oldUser.getFlags().contains(SessionUserFlag.Invited)
+                    && !user.getFlags().contains(SessionUserFlag.Invited)) {
+                addMessage(null, user.getName() + " zaakceptował zaproszenie");
+            }
+
+            if (oldUser.getFlags().contains(SessionUserFlag.Voice)
+                    && !user.getFlags().contains(SessionUserFlag.Voice)) {
+                addMessage(null, user.getName() + " stracił prawo głosu");
+            } else if (!oldUser.getFlags().contains(SessionUserFlag.Voice)
+                    && user.getFlags().contains(SessionUserFlag.Voice)) {
+                addMessage(null, user.getName() + " otrzymał prawo głosu");
+            }
+        }
+    }
+
+    protected void updateImageTransform(int id, double zoom, int x, int y) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        img.setZoom(zoom);
+        img.setFocusX(x);
+        img.setFocusY(y);
+
+        if (img == focusedImage) {
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getFragments());
+            imageEditor.changeZoom(img.getZoom());
+            imageEditor.clearSelection();
+        }
+    }
+
+    protected void updateImageFragments(int id, List<ImageFragment> fragments) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        img.setFragments(fragments);
+
+        if (img == focusedImage) {
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getFragments());
+            imageEditor.changeZoom(img.getZoom());
+            imageEditor.clearSelection();
+        }
+    }
+
+    protected void focusImage(int id) {
+        SessionImage img = null;
+
+        for (SessionImage i : imageList.getItems()) {
+            if (i.getId() == id) {
+                img = i;
+                break;
+            }
+        }
+
+        if (img == null)
+            return;
+
+        if (focusedImage == null) {
+            mainSplit.getItems().add(imagePaneVBox);
+        }
+
+        imageList.getSelectionModel().select(img);
+
+        focusedImage = img;
+
+        imageEditor.setImage(img.getImg(), img.getColor());
+        selectColorPicker.setValue(img.getColor().invert());
+        imageEditor.changeZoom(img.getZoom());
+        imageEditor.getFragments().clear();
+        imageEditor.getFragments().addAll(img.getFragments());
+
+        int dw = imageEditor.getWidth() - (int) imagePaneScroll.getWidth();
+        int dh = imageEditor.getHeight() - (int) imagePaneScroll.getHeight();
+
+        if (dw > 0 && img.getFocusX() > 0 && img.getFocusX() < dw)
+            imagePaneScroll.setHvalue((double) img.getFocusX() / dw);
+        else
+            imagePaneScroll.setHvalue(0);
+
+        if (dh > 0 && img.getFocusY() > 0 && img.getFocusY() < dh)
+            imagePaneScroll.setVvalue((double) img.getFocusY() / dh);
+        else
+            imagePaneScroll.setVvalue(0);
     }
 
     protected void addParticipant(SessionUser user) {
         participantsList.getItems().add(user);
+    }
+
+    protected void setStateText(String stateText) {
+        sessionButton.setText(stateText);
+    }
+
+    protected void setRequestVoiceText(String text, boolean enabled, boolean active) {
+        requestVoiceButton.setText(text);
+        requestVoiceButton.setDisable(!enabled);
+        requestVoiceButton.setSelected(active);
+    }
+
+    protected void setAutoVoiceButtonState(boolean selected) {
+        autoVoiceButton.setSelected(selected);
+    }
+
+    protected void setName(String name) {
+        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
+        addMessage(null, "Nazwa sesji została zmieniona");
+    }
+
+    protected void setState(Main.Session.State state) {
+        if (state == Main.Session.State.Finished) {
+            addMessage(null, "Sesja została zakończona");
+        } else if (state == Main.Session.State.Started) {
+            addMessage(null, "Sesja została rozpoczęta");
+        }
+    }
+
+    protected void disableUserInput(boolean enabled) {
+        textInput.setDisable(!enabled);
+        settingsButton.setDisable(!enabled);
+        sendButton.setDisable(!enabled);
+        inviteButton.setDisable(!enabled);
+        sessionButton.setDisable(!enabled);
     }
 
     protected void inviteUser(SessionUser user) {
@@ -169,9 +408,17 @@ abstract public class AbstractSessionStage extends Stage {
         addMessage(null, user.getName() + " został zaproszony do sesji");
     }
 
-    protected void kickUser(SessionUser user) {
+    protected void kickUser(SessionUser user, SessionEvents.Kicked.Reason reason) {
         participantsList.getItems().remove(user);
-        addMessage(null, user.getName() + " został wyrzucony z sesji");
+
+        switch (reason) {
+            case Declined:
+                addMessage(null, user.getName() + " odrzucił zaproszenie do sesji");
+                break;
+
+            default:
+                addMessage(null, user.getName() + " został wyrzucony z sesji");
+        }
     }
 
     protected void addImageInfo(String info) {
@@ -204,8 +451,20 @@ abstract public class AbstractSessionStage extends Stage {
         chatScroll.setVvalue(1.0);
     }
 
-    protected void onCloseRequest(WindowEvent event) {
-        onCloseRun.accept(this);
+    protected void addImage(SessionImage img) {
+        imageList.getItems().add(img);
+    }
+
+    protected void removeImage(SessionImage img) {
+        imageList.getItems().remove(img);
+
+        if (focusedImage.equals(img)) {
+            mainSplit.getItems().remove(imagePaneVBox);
+            focusedImage = null;
+            imageList.getSelectionModel().clearSelection();
+        }
+
+        addMessage(null, "Zdjęcie " + img.getName() + " zostało usunięte");
     }
 
     @FXML
@@ -264,17 +523,135 @@ abstract public class AbstractSessionStage extends Stage {
         }
     }
 
-    protected void addImage(SessionImage img) {
-        imageList.getItems().add(img);
-    }
+    @FXML
+    private void onImageClicked(MouseEvent event) {
+        SessionImage img = imageList.getSelectionModel().getSelectedItem();
 
-    protected void onUploadImage(byte[] data, String name) {
+        // odznaczanie obrazka
+        if (focusedImage == img) {
+            imageList.getSelectionModel().clearSelection();
+            img = null;
+        }
 
+        if (img == null) {
+            if (focusedImage != null) {
+                mainSplit.getItems().remove(imagePaneVBox);
+                focusedImage = null;
+            }
+        } else {
+            if (focusedImage == null) {
+                mainSplit.getItems().add(imagePaneVBox);
+            }
+
+            focusedImage = img;
+
+            imageEditor.setImage(img.getImg(), img.getColor());
+            selectColorPicker.setValue(img.getColor().invert());
+            imageEditor.changeZoom(img.getZoom());
+            imageEditor.getFragments().clear();
+            imageEditor.getFragments().addAll(img.getFragments());
+
+
+        }
     }
 
     @FXML
     private void onSessionButton(ActionEvent event) {
         onSessionAdvanced();
+    }
+
+    @FXML
+    private void onAutoVoicePressed(ActionEvent event) {
+        boolean selected = autoVoiceButton.isSelected();
+
+        // narazie maskuje zmiany, bo to serwer nas powiadomi czy zaszła ..
+        autoVoiceButton.setSelected(!selected);
+
+        onChangeAutoVoice(selected);
+    }
+
+    @FXML
+    private void onRequestVoiceButton(ActionEvent event) {
+        boolean selected = requestVoiceButton.isSelected();
+
+        // narazie maskuje zmiany, bo to serwer nas powiadomi czy zaszła ..
+        requestVoiceButton.setSelected(!selected);
+
+        onRequestVoice(selected);
+    }
+
+    @FXML
+    private void onFocusButton(ActionEvent event) {
+        int x = (int) Math.ceil(((double) imageEditor.getWidth() - imagePaneScroll.getWidth())
+                * imagePaneScroll.getHvalue());
+        int y = (int) Math.ceil(((double) imageEditor.getHeight() - imagePaneScroll.getHeight())
+                * imagePaneScroll.getVvalue());
+
+        if (x < 0)
+            x = 0;
+
+        if (y < 0)
+            y = 0;
+
+        onFocusClick(x, y);
+    }
+
+    @FXML
+    private void onClearMySelection(ActionEvent event) {
+        if (focusedImage != null)
+            onClearImageFragments(false);
+    }
+
+    @FXML
+    private void onClearAllSelection(ActionEvent event) {
+        if (focusedImage != null)
+            onClearImageFragments(true);
+    }
+
+    @FXML
+    private void onSelectColorPicked(ActionEvent event) {
+        imageEditor.setDefaultColor(selectColorPicker.getValue());
+    }
+
+    @FXML
+    private void onImageKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.DELETE) {
+            SessionImage img = imageList.getSelectionModel().getSelectedItem();
+
+            if (img != null) {
+                onImageRemoved(img);
+            }
+        }
+    }
+
+    protected void onChangeAutoVoice(boolean enabled) {
+
+    }
+
+    protected void onRequestVoice(boolean enabled) {
+
+    }
+
+    protected void onClearImageFragments(boolean all) {
+
+    }
+
+    protected void onImageRemoved(SessionImage img) {
+
+    }
+
+    protected void onImageEditorSelected(Point2D start, Point2D end, double zoom, Color defaultColor) {
+    }
+
+    protected void onImageEditorZoom(double zoom) {
+    }
+
+    protected void onCloseRequest(WindowEvent event) {
+        onCloseRun.accept(this);
+    }
+
+    protected void onUploadImage(byte[] data, String name) {
+
     }
 
     protected void onInviteSend(String name) {
@@ -285,35 +662,19 @@ abstract public class AbstractSessionStage extends Stage {
 
     }
 
-    protected void setButtonsState(String stateText, boolean enabled) {
-        settingsButton.setDisable(!enabled);
-        sessionButton.setDisable(!enabled);
-        inviteButton.setDisable(!enabled);
-        sessionButton.setText(stateText);
-    }
-
-    protected void setName(String name) {
-        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
-        addMessage(null, "Nazwa sesji została zmieniona");
-    }
-
-    protected void setState(Main.Session.State state) {
-        if (state == Main.Session.State.Finished) {
-            addMessage(null, "Sesja została zakończona");
-        } else if (state == Main.Session.State.Started) {
-            addMessage(null, "Sesja została rozpoczęta");
-        }
-    }
-
-    protected void disableUserInput(boolean enabled) {
-        textInput.setDisable(!enabled);
-        settingsButton.setDisable(!enabled);
-        sendButton.setDisable(!enabled);
-        inviteButton.setDisable(!enabled);
-        sessionButton.setDisable(!enabled);
-    }
-
     protected void onSendMessage(String text) {
         textInput.setText("");
+    }
+
+    protected void onUserKick(SessionUser user) {
+
+    }
+
+    protected void onVoiceUser(SessionUser user) {
+
+    }
+
+    protected void onFocusClick(int x, int y) {
+
     }
 }

@@ -58,6 +58,21 @@ public class MessageFactory {
         tmpMap.put((short) 41, SessionEvents.ImageAdded.getDefaultInstance());
         tmpMap.put((short) 42, SessionEvents.ImageRemoved.getDefaultInstance());
         tmpMap.put((short) 43, SessionEvents.SettingsChanged.getDefaultInstance());
+        tmpMap.put((short) 44, SessionEvents.ImageTransformed.getDefaultInstance());
+        tmpMap.put((short) 45, SessionEvents.ImageFragmentsChanged.getDefaultInstance());
+        tmpMap.put((short) 46, SessionRequests.AddImageFragment.getDefaultInstance());
+        tmpMap.put((short) 47, SessionRequests.TransformImage.getDefaultInstance());
+        tmpMap.put((short) 48, SessionResponses.TransformImageResponse.getDefaultInstance());
+        tmpMap.put((short) 49, SessionResponses.AddImageFragmentResponse.getDefaultInstance());
+        tmpMap.put((short) 50, SessionRequests.DeclineInviteRequest.getDefaultInstance());
+        tmpMap.put((short) 51, SessionRequests.AcceptInviteRequest.getDefaultInstance());
+        tmpMap.put((short) 52, SessionEvents.ImageFocus.getDefaultInstance());
+        tmpMap.put((short) 53, SessionEvents.UserUpdated.getDefaultInstance());
+        tmpMap.put((short) 54, SessionRequests.ClearImageFragments.getDefaultInstance());
+        tmpMap.put((short) 55, SessionResponses.ClearImageFragmentsResponse.getDefaultInstance());
+        tmpMap.put((short) 56, SessionAuto.SessionAutoInfo.getDefaultInstance());
+        tmpMap.put((short) 57, SessionAuto.SessionAutoRequest.getDefaultInstance());
+        tmpMap.put((short) 58, SessionAuto.SessionAutoCancel.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

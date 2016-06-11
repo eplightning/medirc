@@ -17,6 +17,7 @@ message SessionUser {
 message SessionData {
     string name = 1;
     Session.State state = 2;
+    bool autoVoice = 3;
 }
 
 // zdefiniowane flagi
@@ -25,5 +26,31 @@ enum UserFlags {
     Owner = 1; // właściciel sesji, nie zmienny
     Operator = 2; // narazie bez wpływu
     Voice = 4; // prawo do manipulacji obrazkami
+    Invited = 8; // zaproszony, narazie bez akceptacji
 }
 
+// rzeczy do obrazków
+message RectFragment {
+    uint32 x1 = 1;
+    uint32 y1 = 2;
+    uint32 x2 = 3;
+    uint32 y2 = 4;
+    double colorR = 5;
+    double colorG = 6;
+    double colorB = 7;
+    double zoom = 8;
+}
+
+message ImageFragment {
+    uint32 id = 1;
+
+    oneof frag {
+        RectFragment rect = 2;
+    }
+}
+
+message ImageTransformations {
+    double zoom = 1;
+    int32 focusX = 2;
+    int32 focusY = 3;
+}

@@ -11,6 +11,7 @@ message Session {
     User owner = 3;
     uint32 users = 4;
     bool ownership = 5;
+    bool invited = 6;
 
     enum State {
         SettingUp = 0;
@@ -18,7 +19,7 @@ message Session {
         Finished = 2;
     }
 
-    State state = 6;
+    State state = 7;
 }
 
 // Obiekt użytkownika

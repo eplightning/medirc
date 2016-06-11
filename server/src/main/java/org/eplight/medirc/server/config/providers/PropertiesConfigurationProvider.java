@@ -30,4 +30,11 @@ public class PropertiesConfigurationProvider implements ConfigurationProvider {
     public boolean hasKey(String key) {
         return properties.getProperty(key) != null;
     }
+
+    @Override
+    public boolean getBool(String key) {
+        String prop = getString(key);
+
+        return prop.equals("yes") || prop.equals("1") || prop.equals("true");
+    }
 }
