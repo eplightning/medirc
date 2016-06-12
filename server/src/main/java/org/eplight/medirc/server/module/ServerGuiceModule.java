@@ -8,16 +8,15 @@ import org.eplight.medirc.server.event.EventLoop;
 import org.eplight.medirc.server.event.dispatchers.function.MessageDispatcher;
 import org.eplight.medirc.server.image.ImageManager;
 import org.eplight.medirc.server.image.repo.ImageRepository;
-import org.eplight.medirc.server.image.repo.NullImageRepository;
+import org.eplight.medirc.server.image.repo.JDBCImageRepository;
 import org.eplight.medirc.server.network.NetworkManager;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
-import org.eplight.medirc.server.session.repository.NullSessionRepository;
+import org.eplight.medirc.server.session.repository.JDBCSessionRepository;
 import org.eplight.medirc.server.session.repository.SessionRepository;
 import org.eplight.medirc.server.user.Users;
 import org.eplight.medirc.server.user.auth.Authentication;
-import org.eplight.medirc.server.user.auth.HardcodedAuthentication;
 import org.eplight.medirc.server.user.auth.JDBCAuthentication;
-import org.eplight.medirc.server.user.factory.HardcodedUserRepository;
+import org.eplight.medirc.server.user.factory.JDBCUserRepository;
 import org.eplight.medirc.server.user.factory.UserRepository;
 
 import java.sql.Connection;
@@ -50,10 +49,10 @@ public class ServerGuiceModule extends AbstractModule {
         bind(Connection.class).toProvider(JDBCConnectionProvider.class).in(Scopes.SINGLETON);
         bind(Users.class).in(Scopes.SINGLETON);
         bind(ActiveSessionsManager.class).in(Scopes.SINGLETON);
-        bind(SessionRepository.class).to(NullSessionRepository.class).in(Scopes.SINGLETON);
+        bind(SessionRepository.class).to(JDBCSessionRepository.class).in(Scopes.SINGLETON);
         bind(Authentication.class).to(JDBCAuthentication.class).in(Scopes.SINGLETON);
-        bind(UserRepository.class).to(HardcodedUserRepository.class).in(Scopes.SINGLETON);
-        bind(ImageRepository.class).to(NullImageRepository.class).in(Scopes.SINGLETON);
+        bind(UserRepository.class).to(JDBCUserRepository.class).in(Scopes.SINGLETON);
+        bind(ImageRepository.class).to(JDBCImageRepository.class).in(Scopes.SINGLETON);
         bind(ImageManager.class).in(Scopes.SINGLETON);
     }
 }

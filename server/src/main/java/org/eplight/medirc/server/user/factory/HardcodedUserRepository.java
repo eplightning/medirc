@@ -3,7 +3,7 @@ package org.eplight.medirc.server.user.factory;
 import org.eplight.medirc.server.user.AbstractUser;
 import org.eplight.medirc.server.user.User;
 
-public class HardcodedUserRepository implements UserRepository {
+public class  HardcodedUserRepository implements UserRepository {
 
     @Override
     public User findById(int id) {

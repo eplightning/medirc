@@ -18,6 +18,7 @@ abstract public class AbstractSession implements Session {
     protected boolean autoVoice;
 
     protected Set<User> participants = new HashSet<>();
+    protected Set<ActiveUser> activeUsers = new HashSet<>();
     protected Map<Integer, EnumSet<SessionUserFlag>> flags = new HashMap<>();
 
     @Override
@@ -44,6 +45,21 @@ abstract public class AbstractSession implements Session {
                 .setState(state.toProtobuf());
 
         return builder.build();
+    }
+
+    @Override
+    public Set<ActiveUser> getActiveUsers() {
+        return activeUsers;
+    }
+
+    @Override
+    public void join(ActiveUser user) {
+        activeUsers.add(user);
+    }
+
+    @Override
+    public void part(ActiveUser user) {
+        activeUsers.remove(user);
     }
 
     @Override

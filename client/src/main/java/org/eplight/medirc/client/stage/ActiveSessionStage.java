@@ -432,11 +432,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
         frag.setX2((int) Math.round(end.getX()));
         frag.setY2((int) Math.round(end.getY()));
 
-        Color c = defaultColor;
-
-        frag.setColorR(c.getRed());
-        frag.setColorG(c.getGreen());
-        frag.setColorB(c.getBlue());
+        frag.setColorR(defaultColor.getRed());
+        frag.setColorG(defaultColor.getGreen());
+        frag.setColorB(defaultColor.getBlue());
 
         b.setFragment(SessionBasic.ImageFragment.newBuilder().setRect(frag).build());
 

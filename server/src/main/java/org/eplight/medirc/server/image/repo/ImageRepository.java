@@ -12,7 +12,10 @@ public interface ImageRepository {
     Image create(int session);
 
     Image findById(int id);
+    Image findById(int id, boolean includeHidden);
+
     Set<Image> findSessionImages(int sess);
+    Set<Image> findSessionImages(int sess, boolean includeHidden);
 
     void persist(Image img) throws ImageRepositoryException;
 

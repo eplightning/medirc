@@ -1,6 +1,7 @@
 package org.eplight.medirc.server.image;
 
 import org.eplight.medirc.server.image.fragments.ImageFragment;
+import org.eplight.medirc.server.user.User;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,5 +28,6 @@ public interface Image {
     void setColor(ImageColor color);
     void setTransformations(ImageTransformations transformations);
 
-    void updateFragments();
+    void addFragment(ImageFragment frag);
+    void clearFragments(User user);
 }

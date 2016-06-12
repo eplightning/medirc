@@ -24,7 +24,17 @@ public class NullImageRepository implements ImageRepository {
     }
 
     @Override
+    public Image findById(int id, boolean includeHidden) {
+        return null;
+    }
+
+    @Override
     public Set<Image> findSessionImages(int sess) {
+        return new HashSet<>();
+    }
+
+    @Override
+    public Set<Image> findSessionImages(int sess, boolean includeHidden) {
         return new HashSet<>();
     }
 

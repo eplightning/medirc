@@ -13,14 +13,20 @@ public class EventLoop {
 
     protected EventQueue queue;
     protected ArrayList<Consumer> consumers;
+    protected ArrayList<Consumer> postConsumers;
 
     public EventLoop(EventQueue queue) {
         this.queue = queue;
         this.consumers = new ArrayList<>();
+        this.postConsumers = new ArrayList<>();
     }
 
     public void registerConsumer(Consumer con) {
         consumers.add(con);
+    }
+
+    public void registerPostConsumer(Consumer con) {
+        postConsumers.add(con);
     }
 
     public EventQueue getQueue() {
@@ -37,6 +43,10 @@ public class EventLoop {
 
     public void fireEvent(Event ev) {
         for (Consumer con : consumers) {
+            con.consume(ev);
+        }
+
+        for (Consumer con : postConsumers) {
             con.consume(ev);
         }
     }

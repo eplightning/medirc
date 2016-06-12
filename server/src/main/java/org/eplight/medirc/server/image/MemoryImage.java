@@ -1,5 +1,8 @@
 package org.eplight.medirc.server.image;
 
+import org.eplight.medirc.server.image.fragments.ImageFragment;
+import org.eplight.medirc.server.user.User;
+
 /**
  * Created by EpLightning on 07.05.2016.
  */
@@ -34,7 +37,16 @@ public class MemoryImage extends AbstractImage {
     }
 
     @Override
-    public void updateFragments() {
+    public void addFragment(ImageFragment frag) {
+        this.imageFragments.add(frag);
+    }
 
+    @Override
+    public void clearFragments(User user) {
+        if (user != null) {
+            this.imageFragments.removeIf(f -> f.getUser().equals(user));
+        } else {
+            this.imageFragments.clear();
+        }
     }
 }

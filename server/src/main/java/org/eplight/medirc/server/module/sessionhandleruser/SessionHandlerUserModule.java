@@ -291,8 +291,7 @@ public class SessionHandlerUserModule implements Module {
 
         logger.info("Added image fragment: `" + sess.getName() + "`");
 
-        img.getFragments().add(ev.getImgFragment());
-        img.updateFragments();
+        img.addFragment(ev.getImgFragment());
 
         SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
         msg.setId(img.getId()).setSessionId(sess.getId());
@@ -308,13 +307,7 @@ public class SessionHandlerUserModule implements Module {
 
         logger.info("Clearing image fragments: `" + sess.getName() + "`");
 
-        if (ev.getUser() == null) {
-            img.getFragments().clear();
-        } else {
-            img.getFragments().removeIf(a -> a.getUser().equals(ev.getUser()));
-        }
-
-        img.updateFragments();
+        img.clearFragments(ev.getUser());
 
         SessionEvents.ImageFragmentsChanged.Builder msg = SessionEvents.ImageFragmentsChanged.newBuilder();
         msg.setId(img.getId()).setSessionId(sess.getId());

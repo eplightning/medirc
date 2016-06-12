@@ -1,11 +1,6 @@
 package org.eplight.medirc.server.image;
 
-import com.google.protobuf.Message;
 import org.eplight.medirc.protocol.SessionBasic;
-import org.eplight.medirc.protocol.SessionBasic.ImageFragment.FragCase;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ImageTransformations {
 
@@ -45,23 +40,11 @@ public class ImageTransformations {
         return zoom;
     }
 
-    public void setZoom(double zoom) {
-        this.zoom = zoom;
-    }
-
     public int getFocusX() {
         return focusX;
     }
 
-    public void setFocusX(int focusX) {
-        this.focusX = focusX;
-    }
-
     public int getFocusY() {
         return focusY;
-    }
-
-    public void setFocusY(int focusY) {
-        this.focusY = focusY;
     }
 }
