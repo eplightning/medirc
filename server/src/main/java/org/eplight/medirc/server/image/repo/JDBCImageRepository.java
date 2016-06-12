@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.image.repo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.image.ImageColor;
 import org.eplight.medirc.server.image.ImageTransformations;
@@ -19,6 +21,8 @@ import java.util.Set;
  * Created by EpLightning on 12.06.2016.
  */
 public class JDBCImageRepository implements ImageRepository {
+
+    private static final Logger logger = LogManager.getLogger(JDBCImageRepository.class);
 
     @Inject
     private Connection connection;
@@ -45,7 +49,7 @@ public class JDBCImageRepository implements ImageRepository {
                 return createImage(set);
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return null;
@@ -67,7 +71,7 @@ public class JDBCImageRepository implements ImageRepository {
                 return createImage(set);
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return null;
@@ -91,7 +95,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             return result;
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return new HashSet<>();
@@ -117,7 +121,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             return result;
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return new HashSet<>();
@@ -178,7 +182,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -229,7 +233,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -242,7 +246,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -258,7 +262,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -274,7 +278,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -303,7 +307,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -315,7 +319,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -329,7 +333,7 @@ public class JDBCImageRepository implements ImageRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 }

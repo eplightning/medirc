@@ -93,3 +93,25 @@ message UserAutocomplete {
 message UserAutocompleteResponse {
     repeated User user = 1;
 }
+
+// Klient: Prośba o pobranie sejwa
+message DownloadSession {
+    uint32 id = 1;
+}
+
+// Serwer: Odpowiedź na prośbe
+message DownloadSessionAcknowledge {
+    uint32 id = 1;
+    bool success = 2;
+    string filename = 3;
+    uint32 blocks = 4;
+    uint32 block_size = 5;
+}
+
+// Serwer: Blok sejwa
+message DownloadSessionBlock {
+    uint32 id = 1;
+    uint32 block = 2;
+    uint32 remaining = 3;
+    bytes data = 4;
+}

@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.session.repository;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.SessionUserFlag;
 import org.eplight.medirc.server.session.JDBCSession;
 import org.eplight.medirc.server.session.Session;
@@ -19,6 +21,8 @@ import java.util.Set;
  */
 public class JDBCSessionRepository implements SessionRepository {
 
+    private static final Logger logger = LogManager.getLogger(JDBCSessionRepository.class);
+
     @Inject
     private Connection connection;
 
@@ -37,7 +41,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             return findFromResultSet(st);
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return new HashSet<>();
@@ -50,7 +54,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             return findFromResultSet(st);
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return new HashSet<>();
@@ -120,7 +124,7 @@ public class JDBCSessionRepository implements SessionRepository {
                 output.add(new JDBCSession(set, owner, flags, userSet, this));
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return output;
@@ -135,7 +139,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -148,7 +152,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -161,7 +165,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -174,7 +178,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -203,7 +207,7 @@ public class JDBCSessionRepository implements SessionRepository {
                 throw new RuntimeException("Invalid call to setUserFlags");
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -217,7 +221,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 
@@ -232,7 +236,7 @@ public class JDBCSessionRepository implements SessionRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 }

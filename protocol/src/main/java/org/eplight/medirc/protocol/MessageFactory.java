@@ -73,6 +73,9 @@ public class MessageFactory {
         tmpMap.put((short) 56, SessionAuto.SessionAutoInfo.getDefaultInstance());
         tmpMap.put((short) 57, SessionAuto.SessionAutoRequest.getDefaultInstance());
         tmpMap.put((short) 58, SessionAuto.SessionAutoCancel.getDefaultInstance());
+        tmpMap.put((short) 59, Main.DownloadSession.getDefaultInstance());
+        tmpMap.put((short) 60, Main.DownloadSessionAcknowledge.getDefaultInstance());
+        tmpMap.put((short) 61, Main.DownloadSessionBlock.getDefaultInstance());
 
         mapping = new HashMap<>();
         reverseMapping = new HashMap<>();

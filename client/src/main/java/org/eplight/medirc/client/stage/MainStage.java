@@ -9,8 +9,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.eplight.medirc.client.components.main.ArchivedSessionCell;
 import org.eplight.medirc.client.components.main.SessionCell;
 import org.eplight.medirc.client.data.Session;
 import org.eplight.medirc.client.data.User;
@@ -22,10 +24,8 @@ import org.eplight.medirc.protocol.Main;
 import org.eplight.medirc.protocol.SessionRequests;
 import org.eplight.medirc.protocol.SessionResponses;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class MainStage extends Stage {
@@ -47,6 +47,9 @@ public class MainStage extends Stage {
     private Runnable logoutHandler;
 
     private List<AbstractSessionStage> sessionStages = new ArrayList<>();
+
+    private Map<Integer, DownloadDialog> downloadDialogs = new HashMap<>();
+    private Map<Integer, ByteArrayOutputStream> downloadStreams = new HashMap<>();
 
     public MainStage(Connection connection, Basic.HandshakeAck handshakeAck, MessageDispatcher dispatcher) {
         super();
@@ -70,7 +73,7 @@ public class MainStage extends Stage {
         setHeight(800);
 
         activeSessions.setCellFactory(param -> new SessionCell(this::onAcceptInvite, this::onDeclineInvite));
-        archivedSessions.setCellFactory(param -> new SessionCell(this::onAcceptInvite, this::onDeclineInvite));
+        archivedSessions.setCellFactory(param -> new ArchivedSessionCell(this::onDownload));
 
         activeSessions.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -94,8 +97,73 @@ public class MainStage extends Stage {
         dispatcher.register(Main.SessionUpdated.class, new JavaFxDispatchFunction<>(this::sessionUpdated));
         dispatcher.register(Main.SessionKicked.class, new JavaFxDispatchFunction<>(this::sessionKicked));
         dispatcher.register(SessionResponses.JoinResponse.class, new JavaFxDispatchFunction<>(this::onJoinResponse));
+        dispatcher.register(Main.DownloadSessionAcknowledge.class, new JavaFxDispatchFunction<>(this::onDownloadAck));
+        dispatcher.register(Main.DownloadSessionBlock.class, new JavaFxDispatchFunction<>(this::onDownloadBlock));
 
         connection.writeAndFlush(Main.SyncRequest.newBuilder().build());
+    }
+
+    private void onDownload(Session session) {
+        if (downloadDialogs.containsKey(session.getId()))
+            return;
+
+        connection.writeAndFlush(Main.DownloadSession.newBuilder().setId(session.getId()).build());
+    }
+
+    private void onDownloadAck(Main.DownloadSessionAcknowledge msg) {
+        if (!msg.getSuccess())
+            return;
+
+        if (downloadDialogs.containsKey(msg.getId()))
+            return;
+
+        DownloadDialog dialog = new DownloadDialog(msg.getBlockSize(), msg.getBlocks(), msg.getFilename());
+
+        downloadDialogs.put(msg.getId(), dialog);
+        downloadStreams.put(msg.getId(), new ByteArrayOutputStream(msg.getBlockSize() * msg.getBlocks()));
+
+        dialog.show();
+    }
+
+    private void onDownloadBlock(Main.DownloadSessionBlock msg) {
+        if (!downloadDialogs.containsKey(msg.getId()) || !downloadStreams.containsKey(msg.getId()))
+            return;
+
+        ByteArrayOutputStream stream = downloadStreams.get(msg.getId());
+        DownloadDialog dialog = downloadDialogs.get(msg.getId());
+
+        if (msg.getRemaining() == 0) {
+            downloadDialogs.remove(msg.getId());
+            dialog.close();
+
+            downloadStreams.remove(msg.getId());
+
+            FileChooser fileChooser = new FileChooser();
+
+            fileChooser.setInitialFileName(dialog.getFilename());
+
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQLite files (*.db)", "*.db");
+            fileChooser.getExtensionFilters().add(extFilter);
+
+            File file = fileChooser.showSaveDialog(this);
+
+            if (file != null) {
+                try {
+                    FileOutputStream fileStream = new FileOutputStream(file);
+                    stream.writeTo(fileStream);
+                } catch (IOException e) {
+                    // ...
+                }
+            }
+        } else {
+            try {
+                msg.getData().writeTo(stream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            dialog.blockReceived();
+        }
     }
 
     private void onAcceptInvite(Session session) {
@@ -238,5 +306,7 @@ public class MainStage extends Stage {
 
     public void shutdown() {
         sessionStages.forEach(Stage::close);
+
+        downloadDialogs.forEach((a, b) -> b.close());
     }
 }

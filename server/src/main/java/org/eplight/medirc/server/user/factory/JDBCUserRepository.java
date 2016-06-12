@@ -1,5 +1,7 @@
 package org.eplight.medirc.server.user.factory;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.server.user.JDBCUser;
 import org.eplight.medirc.server.user.User;
 
@@ -14,6 +16,8 @@ import java.util.HashMap;
  * Created by EpLightning on 11.06.2016.
  */
 public class JDBCUserRepository implements UserRepository {
+
+    private static final Logger logger = LogManager.getLogger(JDBCUserRepository.class);
 
     @Inject
     private Connection connection;
@@ -40,7 +44,7 @@ public class JDBCUserRepository implements UserRepository {
                 return usr;
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return null;
@@ -59,7 +63,7 @@ public class JDBCUserRepository implements UserRepository {
                 return new JDBCUser(set, this);
             }
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
 
         return null;
@@ -74,7 +78,7 @@ public class JDBCUserRepository implements UserRepository {
 
             stmt.execute();
         } catch (SQLException e) {
-            // logger
+            logger.error(e.getMessage());
         }
     }
 }

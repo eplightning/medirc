@@ -10,6 +10,8 @@ import org.eplight.medirc.server.image.ImageManager;
 import org.eplight.medirc.server.image.repo.ImageRepository;
 import org.eplight.medirc.server.image.repo.JDBCImageRepository;
 import org.eplight.medirc.server.network.NetworkManager;
+import org.eplight.medirc.server.session.ArchivedSessionsManager;
+import org.eplight.medirc.server.session.SessionSerializer;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
 import org.eplight.medirc.server.session.repository.JDBCSessionRepository;
 import org.eplight.medirc.server.session.repository.SessionRepository;
@@ -48,7 +50,9 @@ public class ServerGuiceModule extends AbstractModule {
 
         bind(Connection.class).toProvider(JDBCConnectionProvider.class).in(Scopes.SINGLETON);
         bind(Users.class).in(Scopes.SINGLETON);
+        bind(SessionSerializer.class).in(Scopes.SINGLETON);
         bind(ActiveSessionsManager.class).in(Scopes.SINGLETON);
+        bind(ArchivedSessionsManager.class).in(Scopes.SINGLETON);
         bind(SessionRepository.class).to(JDBCSessionRepository.class).in(Scopes.SINGLETON);
         bind(Authentication.class).to(JDBCAuthentication.class).in(Scopes.SINGLETON);
         bind(UserRepository.class).to(JDBCUserRepository.class).in(Scopes.SINGLETON);

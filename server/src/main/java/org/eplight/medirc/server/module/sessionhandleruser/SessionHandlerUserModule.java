@@ -12,6 +12,7 @@ import org.eplight.medirc.server.event.consumers.FunctionConsumer;
 import org.eplight.medirc.server.event.events.session.*;
 import org.eplight.medirc.server.image.Image;
 import org.eplight.medirc.server.module.Module;
+import org.eplight.medirc.server.session.ArchivedSessionsManager;
 import org.eplight.medirc.server.session.Session;
 import org.eplight.medirc.server.session.SessionState;
 import org.eplight.medirc.server.session.active.ActiveSessionsManager;
@@ -38,6 +39,9 @@ public class SessionHandlerUserModule implements Module {
 
     @Inject
     private ActiveSessionsManager activeSessionsManager;
+
+    @Inject
+    private ArchivedSessionsManager archivedSessionsManager;
 
     private void sendSessionUpdate(Session sess) {
         Set<ActiveUser> affectedUsers = users.values().stream()
@@ -229,9 +233,9 @@ public class SessionHandlerUserModule implements Module {
         // session list update for participants
         sendSessionUpdate(sess);
 
-        // TODO: Handle moving active session to archived sessions container
         if (oldState == SessionState.Started && sess.getState() == SessionState.Finished) {
             activeSessionsManager.removeSession(sess.getId());
+            archivedSessionsManager.addSession(sess);
         }
     }
 
