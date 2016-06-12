@@ -108,5 +108,32 @@ public class JDBCConnectionProvider implements Provider<Connection> {
                 "\tFOREIGN KEY(`user_id`) REFERENCES `users`(`id`),\n" +
                 "\tFOREIGN KEY(`image_id`) REFERENCES `images`(`id`)\n" +
                 ")");
+
+        stmt.execute("CREATE TABLE IF NOT EXISTS `session_events` (\n" +
+                "\t`id`\tINTEGER NOT NULL,\n" +
+                "\t`session_id`\tINTEGER NOT NULL,\n" +
+                "\t`timestamp`\tTEXT NOT NULL,\n" +
+                "\t`type`\tTEXT NOT NULL,\n" +
+                "\t`image_id`\tINTEGER,\n" +
+                "\t`user_id`\tINTEGER,\n" +
+                "\t`zoom`\tREAL,\n" +
+                "\t`color_red`\tREAL,\n" +
+                "\t`color_green`\tREAL,\n" +
+                "\t`color_blue`\tREAL,\n" +
+                "\t`frag_type`\tTEXT,\n" +
+                "\t`x1`\tINTEGER,\n" +
+                "\t`x2`\tINTEGER,\n" +
+                "\t`y1`\tINTEGER,\n" +
+                "\t`y2`\tINTEGER,\n" +
+                "\t`flags`\tINTEGER,\n" +
+                "\t`reason`\tTEXT,\n" +
+                "\t`message`\tTEXT,\n" +
+                "\t`state`\tINTEGER,\n" +
+                "\t`name`\tTEXT,\n" +
+                "\t`auto_voice`\tINTEGER,\n" +
+                "\tPRIMARY KEY(id),\n" +
+                "\tFOREIGN KEY(`session_id`) REFERENCES `sessions`(`id`),\n" +
+                "\tFOREIGN KEY(`image_id`) REFERENCES `images`(`id`)\n" +
+                ")");
     }
 }

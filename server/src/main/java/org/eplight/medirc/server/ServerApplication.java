@@ -13,9 +13,11 @@ import org.eplight.medirc.server.event.queue.LinkedEventQueue;
 import org.eplight.medirc.server.module.ServerGuiceModule;
 import org.eplight.medirc.server.module.SimpleModuleManager;
 import org.eplight.medirc.server.module.auth.AuthModuleDefinition;
+import org.eplight.medirc.server.module.autovoice.AutoVoiceDefinition;
 import org.eplight.medirc.server.module.home.HomeModuleDefinition;
 import org.eplight.medirc.server.module.sessionhandleruser.SessionHandlerUserDefinition;
 import org.eplight.medirc.server.module.sessioninput.SessionInputDefinition;
+import org.eplight.medirc.server.module.sessionrecorder.SessionRecorderDefinition;
 import org.eplight.medirc.server.network.NetworkManager;
 
 public class ServerApplication {
@@ -56,6 +58,8 @@ public class ServerApplication {
         modules.register(new HomeModuleDefinition());
         modules.register(new SessionInputDefinition());
         modules.register(new SessionHandlerUserDefinition());
+        modules.register(new SessionRecorderDefinition());
+        modules.register(new AutoVoiceDefinition());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 
