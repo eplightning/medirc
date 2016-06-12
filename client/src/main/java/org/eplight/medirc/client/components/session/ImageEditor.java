@@ -181,15 +181,7 @@ public class ImageEditor extends Group {
     }
 
     public void adjustZoom(double val) {
-        double z = zoom.get();
-
-        z += val;
-
-        if (z < 0.1) {
-            z = 0.1;
-        } else if (z > maxZoom.get()) {
-            z = maxZoom.get();
-        }
+        double z = zoomCalculate(val);
 
         double difference = z / zoom.get();
 
@@ -202,6 +194,20 @@ public class ImageEditor extends Group {
         selectCurrent.setValue(selectCurrent.get().multiply(difference));
 
         repaintCanvas();
+    }
+
+    private double zoomCalculate(double adjustment) {
+        double z = zoom.get();
+
+        z += adjustment;
+
+        if (z < 0.1) {
+            z = 0.1;
+        } else if (z > maxZoom.get()) {
+            z = maxZoom.get();
+        }
+
+        return z;
     }
 
     public void addSelectionHandler(SelectionEventHandler h) {
@@ -231,8 +237,10 @@ public class ImageEditor extends Group {
     }
 
     private void adjustZoomUser(double val) {
-        adjustZoom(val);
-        zoomHandlers.forEach(a -> a.handle(zoom.get()));
+        //adjustZoom(val);
+        //zoomHandlers.forEach(a -> a.handle(zoom.get()));
+        double z = zoomCalculate(val);
+        zoomHandlers.forEach(a -> a.handle(z));
     }
 
     private void repaintSelect() {
