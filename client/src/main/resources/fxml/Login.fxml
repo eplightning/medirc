@@ -70,12 +70,12 @@
                </padding>
                <children>
                   <Label text="Logowanie do serwera" />
-                  <TextField fx:id="username" promptText="Nazwa użytkownika">
+                  <TextField fx:id="username" promptText="Nazwa użytkownika" onKeyPressed="#handleEnterPressed">
                      <VBox.margin>
                         <Insets top="20.0" />
                      </VBox.margin>
                   </TextField>
-                  <PasswordField fx:id="password" promptText="Hasło">
+                  <PasswordField fx:id="password" promptText="Hasło" onKeyPressed="#handleEnterPressed">
                      <VBox.margin>
                         <Insets top="20.0" />
                      </VBox.margin>

@@ -5,6 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.TilePane;
 import javafx.stage.Stage;
 
@@ -70,6 +72,14 @@ public class LoginStage extends Stage {
             function.login(username.getText(), password.getText(), serverAddress.getText(), Integer.parseInt(serverPort.getText()));
         }
     }
+
+    @FXML
+    public void handleEnterPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+            loginPushed();
+        }
+    }
+
 
     public void setState(boolean state) {
         loginButton.setDisable(!state);
