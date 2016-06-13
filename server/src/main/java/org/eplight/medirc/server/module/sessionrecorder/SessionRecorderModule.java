@@ -226,7 +226,7 @@ public class SessionRecorderModule implements Module {
         try {
             PreparedStatement stmt = connection.prepareStatement("INSERT INTO session_events" +
                     " (session_id, `timestamp`, `type`, `image_id`, `zoom`, `color_red`, `color_green`, `color_blue`," +
-                    " `frag_type`, `x1`, `x2`, `y1`, `y2`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    " `frag_type`, `x1`, `x2`, `y1`, `y2`, `user_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             stmt.setInt(1, ev.getSession().getId());
             stmt.setString(2, createTimestamp());
@@ -241,6 +241,7 @@ public class SessionRecorderModule implements Module {
             stmt.setInt(11, rectImageFragment.getX2());
             stmt.setInt(12, rectImageFragment.getY1());
             stmt.setInt(13, rectImageFragment.getY2());
+            stmt.setInt(14, rectImageFragment.getUser().getId());
 
             stmt.execute();
         } catch (SQLException e) {

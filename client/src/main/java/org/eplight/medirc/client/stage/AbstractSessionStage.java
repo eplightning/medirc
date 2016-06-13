@@ -366,6 +366,17 @@ abstract public class AbstractSessionStage extends Stage {
             imagePaneScroll.setVvalue(0);
     }
 
+    protected String getStateButtonText(Main.Session.State state) {
+        switch (state) {
+            case Started:
+                return "Zakończ sesję";
+            case SettingUp:
+                return "Rozpocznij sesję";
+            default:
+                return "Zakończona sesja";
+        }
+    }
+
     protected void addParticipant(SessionUser user) {
         participantsList.getItems().add(user);
     }

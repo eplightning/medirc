@@ -1,5 +1,6 @@
 package org.eplight.medirc.client.stage;
 
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -132,6 +133,14 @@ public class MainStage extends Stage {
         ByteArrayOutputStream stream = downloadStreams.get(msg.getId());
         DownloadDialog dialog = downloadDialogs.get(msg.getId());
 
+        try {
+            msg.getData().writeTo(stream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        dialog.blockReceived();
+
         if (msg.getRemaining() == 0) {
             downloadDialogs.remove(msg.getId());
             dialog.close();
@@ -152,17 +161,9 @@ public class MainStage extends Stage {
                     FileOutputStream fileStream = new FileOutputStream(file);
                     stream.writeTo(fileStream);
                 } catch (IOException e) {
-                    // ...
+                    // ...s
                 }
             }
-        } else {
-            try {
-                msg.getData().writeTo(stream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            dialog.blockReceived();
         }
     }
 
@@ -174,6 +175,20 @@ public class MainStage extends Stage {
     private void onDeclineInvite(Session session) {
         if (session.isInvited())
             connection.writeAndFlush(SessionRequests.DeclineInviteRequest.newBuilder().setId(session.getId()).build());
+    }
+
+    @FXML
+    private void onLoadSessionFile(ActionEvent ev) {
+        FileChooser fileChooser = new FileChooser();
+
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("SQLite files (*.db)", "*.db");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        File file = fileChooser.showOpenDialog(this);
+
+        if (file != null) {
+            sessionStages.add(new ArchiveSessionStage(this::onCloseSession, handshakeAck, file));
+        }
     }
 
     @FXML

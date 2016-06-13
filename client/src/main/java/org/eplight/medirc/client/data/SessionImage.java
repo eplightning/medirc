@@ -47,6 +47,18 @@ public class SessionImage {
         this.fragmentList = list;
     }
 
+    public SessionImage(int id, byte[] data, String name, Color color) {
+        this.id = id;
+        this.name = name;
+        this.img = new Image(new ByteArrayInputStream(data));
+
+        this.color = color;
+        this.zoom = 1.0;
+        this.focusX = 0;
+        this.focusY = 0;
+        this.fragmentList = new ArrayList<>();
+    }
+
     public int getId() {
         return id;
     }

@@ -36,6 +36,7 @@
                               <ToolBar prefHeight="40.0" prefWidth="200.0">
                                 <items>
                                   <Button fx:id="createNewSession" mnemonicParsing="false" onAction="#newSessionPushed" text="Rozpocznij nową sesję" />
+                                    <Button mnemonicParsing="false" onAction="#onLoadSessionFile" text="Wczytaj plik sesji" />
                                 </items>
                               </ToolBar>
                               <TabPane prefHeight="468.0" prefWidth="566.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">

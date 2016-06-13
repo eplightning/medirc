@@ -19,6 +19,18 @@ public class SessionUser {
         update(user);
     }
 
+    public SessionUser(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.flags = SessionUserFlag.fromProtobuf(0);
+    }
+
+    public SessionUser(int id, String name, EnumSet<SessionUserFlag> flags) {
+        this.id = id;
+        this.name = name;
+        this.flags = flags;
+    }
+
     public void update(SessionBasic.SessionUser user) {
         this.name = user.getName();
         this.flags = SessionUserFlag.fromProtobuf(user.getFlags());

@@ -229,17 +229,6 @@ public class ActiveSessionStage extends AbstractSessionStage {
             addMessage(null, "Błąd: " + msg.getError());
     }
 
-    private String getStateButtonText(Main.Session.State state) {
-        switch (state) {
-            case Started:
-                return "Zakończ sesję";
-            case SettingUp:
-                return "Rozpocznij sesję";
-            default:
-                return "Zakończona sesja";
-        }
-    }
-
     private void setupView(SessionResponses.JoinResponse msg) {
         setStateText(getStateButtonText(msg.getData().getState()));
         updateAutoData(msg.getData().getAutoVoice());
