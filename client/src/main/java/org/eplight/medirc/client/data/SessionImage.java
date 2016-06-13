@@ -27,6 +27,17 @@ public class SessionImage {
     private int focusY;
     private List<ImageFragment> fragmentList;
 
+    public SessionImage(SessionImage other) {
+        this.id = other.id;
+        this.name = other.name;
+        this.img = other.img;
+        this.color = other.color;
+        this.zoom = other.zoom;
+        this.focusX = other.focusX;
+        this.focusY = other.focusY;
+        this.fragmentList = other.getFragments();
+    }
+
     public SessionImage(int id, String name) {
         this.id = id;
         this.name = name;

@@ -115,6 +115,7 @@ public class ArchiveSessionStage extends AbstractSessionStage {
                     advance(newValue.intValue() - oldValue.intValue());
                 } else {
                     reset();
+                    resetWindow();
                     advance(newValue.intValue());
                 }
             }
@@ -214,7 +215,7 @@ public class ArchiveSessionStage extends AbstractSessionStage {
 
                 if (img != null) {
                     addImageInfo(img.getName());
-                    addImage(img);
+                    addImage(new SessionImage(img));
                 }
 
                 break;
@@ -246,7 +247,7 @@ public class ArchiveSessionStage extends AbstractSessionStage {
                     Color c = Color.color(e.getColorRed(), e.getColorGreen(), e.getColorBlue(), 1.0);
 
                     RectImageFragment f = new RectImageFragment(new Point2D(e.getX1(), e.getY1()),
-                            new Point2D(e.getX2(), e.getY2()), e.getZoom(), c);
+                            new Point2D(e.getX2(), e.getY2()), e.getZoom(), c, e.getUserId());
 
                     if (!currentFragments.containsKey(img.getId()))
                         currentFragments.put(img.getId(), new ArrayList<>());

@@ -109,6 +109,22 @@ abstract public class AbstractSessionStage extends Stage {
         this.handshakeAck = ack;
     }
 
+    protected void resetWindow() {
+        mainSplit.getItems().remove(imagePaneVBox);
+        imageEditor = new ImageEditor();
+        imagePaneScroll.setContent(imageEditor);
+
+        imageEditor.addSelectionHandler(this::onImageEditorSelected);
+        imageEditor.addZoomHandler(this::onImageEditorZoom);
+
+        focusedImage = null;
+
+        userList.getItems().clear();
+        participantsList.getItems().clear();
+        imageList.getItems().clear();
+        chatView.getChildren().clear();
+    }
+
     protected void setupWindow(String sessionName, String username) {
         // wczytanie FXML-a
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SessionWindow.fxml"));

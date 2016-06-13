@@ -41,6 +41,8 @@ public class SessionSerializer {
             createRelevantImages(outputConnection, session);
             copyEvents(outputConnection, session);
 
+            //outputConnection.createStatement().execute("VACUUM");
+
             outputConnection.close();
         } catch (SQLException e) {
             logger.error(e.getMessage());

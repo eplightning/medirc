@@ -203,6 +203,9 @@ public class HomeModule implements Module {
 
             int remainingSize = data.length - blockSize * i;
 
+            if (remainingSize > blockSize)
+                remainingSize = blockSize;
+
             b.setData(ByteString.copyFrom(data, blockSize * i, remainingSize));
 
             usr.getChannel().writeAndFlush(b.build());

@@ -272,7 +272,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
             if (autoInfo != null) {
                 switch (autoInfo.getState()) {
                     case AutoNone:
-                        setRequestVoiceText("Poproś o głos (" + autoInfo.getQueueUsers() + ")", true, false);
+                        setRequestVoiceText("Poproś o głos", true, false);
                         break;
 
                     case AutoQueued:
