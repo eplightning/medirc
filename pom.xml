@@ -17,18 +17,20 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <medirc.protocol.version>0.1-SNAPSHOT</medirc.protocol.version>
-        <protobuf.version>3.0.0-beta-2</protobuf.version>
-        <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
+        <protobuf.version>3.0.2</protobuf.version>
+        <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
         <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
-        <maven-jar-plugin.version>2.3.1</maven-jar-plugin.version>
-        <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-        <log4j.version>2.5</log4j.version>
-        <netty.version>4.0.35.Final</netty.version>
-        <guice.version>4.0</guice.version>
+        <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
+        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <log4j.version>2.13.3</log4j.version>
+        <netty.version>4.1.50.Final</netty.version>
+        <guice.version>4.2.3</guice.version>
         <imgscalr-lib.version>4.2</imgscalr-lib.version>
-        <sqlite-jdbc.version>3.8.11.2</sqlite-jdbc.version>
+        <sqlite-jdbc.version>3.31.1</sqlite-jdbc.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <javafx.version>11</javafx.version>
     </properties>
 
     <build>
@@ -38,8 +40,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
         </plugins>

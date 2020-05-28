@@ -1,12 +1,11 @@
 package org.eplight.medirc.server.image.fragments;
 
-import com.sun.media.sound.InvalidFormatException;
 import org.eplight.medirc.protocol.SessionBasic;
 import org.eplight.medirc.server.user.User;
 
 public class ImageFragmentFactory {
 
-    public static ImageFragment create(int id, User user, SessionBasic.ImageFragment msg) throws InvalidFormatException {
+    public static ImageFragment create(int id, User user, SessionBasic.ImageFragment msg) throws UnsupportedOperationException {
         switch (msg.getFragCase()) {
             case RECT:
                 RectImageFragment frag = new RectImageFragment(id, user);
@@ -15,6 +14,6 @@ public class ImageFragmentFactory {
                 return frag;
         }
 
-        throw new InvalidFormatException("Unknown fragment type");
+        throw new UnsupportedOperationException("Unknown fragment type");
     }
 }

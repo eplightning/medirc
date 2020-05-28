@@ -1,6 +1,5 @@
 package org.eplight.medirc.server.image.fragments;
 
-import com.sun.media.sound.InvalidFormatException;
 import org.eplight.medirc.protocol.SessionBasic;
 import org.eplight.medirc.server.image.ImageColor;
 import org.eplight.medirc.server.user.User;
@@ -22,14 +21,14 @@ public class RectImageFragment implements ImageFragment {
         this.user = user;
     }
 
-    public void fromProtobuf(SessionBasic.RectFragment frag) throws InvalidFormatException {
+    public void fromProtobuf(SessionBasic.RectFragment frag) throws UnsupportedOperationException {
         if (frag.getColorB() > 1.0 || frag.getColorG() > 1.0 || frag.getColorG() > 1.0 || frag.getColorG() < 0.0 ||
                 frag.getColorB() < 0.0 || frag.getColorR() < 0.0) {
-            throw new InvalidFormatException("Invalid fragment color");
+            throw new UnsupportedOperationException("Invalid fragment color");
         }
 
         if (frag.getZoom() < 0.1) {
-            throw new InvalidFormatException("Invalid fragment zoom");
+            throw new UnsupportedOperationException("Invalid fragment zoom");
         }
 
         setX1(frag.getX1());

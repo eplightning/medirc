@@ -1,7 +1,6 @@
 package org.eplight.medirc.server.module.sessioninput;
 
 import com.google.protobuf.ByteString;
-import com.sun.media.sound.InvalidFormatException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eplight.medirc.protocol.Main;
@@ -701,7 +700,7 @@ public class SessionInputModule implements Module {
 
         try {
             frag = ImageFragmentFactory.create(fragmentId, user, msg.getFragment());
-        } catch (InvalidFormatException e) {
+        } catch (UnsupportedOperationException e) {
             response.setStatus(statusError(img.getSessionId(), e.getMessage()));
             user.getChannel().writeAndFlush(response.build());
             return;
