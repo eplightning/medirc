@@ -33,7 +33,7 @@ public class TimelineStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Linia czasu sesji");
+        setTitle("Session timeline");
         slider.setMax(seconds);
 
         initOwner(parent);

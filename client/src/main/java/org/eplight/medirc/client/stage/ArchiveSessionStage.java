@@ -67,8 +67,8 @@ public class ArchiveSessionStage extends AbstractSessionStage {
             this.connection.close();
         } catch (SQLException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Błąd");
-            alert.setHeaderText("Błąd podczas czytania pliku");
+            alert.setTitle("Error");
+            alert.setHeaderText("Error while reading the file");
             alert.setContentText(e.getMessage());
             alert.showAndWait();
 
@@ -76,7 +76,7 @@ public class ArchiveSessionStage extends AbstractSessionStage {
             this.onCloseRun.accept(this);
         }
 
-        setupWindow("Nagrana sesja", ack.getName());
+        setupWindow("Recorded session", ack.getName());
         setAllowedActions(EnumSet.noneOf(AllowedActions.class));
         disableUserInput(false);
 
@@ -162,7 +162,7 @@ public class ArchiveSessionStage extends AbstractSessionStage {
         if (users.containsKey(id))
             return users.get(id);
 
-        return "Nieznany użytkownik";
+        return "Unknown user";
     }
 
     private SessionUser getUser(int id) {

@@ -49,24 +49,24 @@ public class DownloadDialog extends Stage {
         this.blocksDownloaded = 0;
         this.filename = filename;
 
-        setTitle("Pobieranie sesji");
+        setTitle("Downloading session");
         setResizable(false);
         initStyle(StageStyle.UNDECORATED);
 
 
-        filenameLabel.setText("Nazwa pliku: " + filename);
+        filenameLabel.setText("Filename: " + filename);
         progress.setProgress(0);
-        downloadedBlocks.setText("Pobranych bloków: 0");
-        remainingBlocks.setText("Pozostało bloków: " + blocksTotal);
-        blockSize.setText("Rozmiar bloku: " + size + " bajtów");
+        downloadedBlocks.setText("Downloaded blocks: 0");
+        remainingBlocks.setText("Blocks remaining: " + blocksTotal);
+        blockSize.setText("Block size: " + size + " bytes");
     }
 
     public void blockReceived() {
         if (blocksDownloaded < blocksTotal)
             blocksDownloaded++;
 
-        downloadedBlocks.setText("Pobranych bloków: " + blocksDownloaded);
-        remainingBlocks.setText("Pozostało bloków: " + (blocksTotal - blocksDownloaded));
+        downloadedBlocks.setText("Downloaded blocks: " + blocksDownloaded);
+        remainingBlocks.setText("Blocks remaining: " + (blocksTotal - blocksDownloaded));
         progress.setProgress((double) blocksDownloaded / (double) blocksTotal);
     }
 

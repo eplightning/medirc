@@ -58,7 +58,7 @@ public class LoginStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Logowanie do serwera");
+        setTitle("Server login");
         setWidth(600);
         setHeight(400);
 

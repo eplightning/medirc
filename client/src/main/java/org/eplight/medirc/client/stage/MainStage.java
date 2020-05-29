@@ -69,7 +69,7 @@ public class MainStage extends Stage {
             throw new RuntimeException(e);
         }
 
-        setTitle("Okno główne - medirc (Użytkownik: " + handshakeAck.getName() + ")");
+        setTitle("Main window - medirc (User: " + handshakeAck.getName() + ")");
         setWidth(1024);
         setHeight(800);
 
@@ -194,9 +194,9 @@ public class MainStage extends Stage {
     @FXML
     protected void newSessionPushed() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Nowa sesja");
-        dialog.setHeaderText("Nowa sesja");
-        dialog.setContentText("Podaj nazwę sesji:");
+        dialog.setTitle("New session");
+        dialog.setHeaderText("New session");
+        dialog.setContentText("Enter session name:");
 
         Optional<String> result = dialog.showAndWait();
 
@@ -303,8 +303,8 @@ public class MainStage extends Stage {
         if (!msg.getStatus().getSuccess()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
 
-            alert.setTitle("Błąd");
-            alert.setHeaderText("Błąd dołączania do sesji");
+            alert.setTitle("Error");
+            alert.setHeaderText("Could not join the session");
             alert.setContentText(msg.getStatus().getError());
 
             alert.showAndWait();

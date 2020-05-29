@@ -68,7 +68,7 @@ public class SessionCell extends ListCell<Session> {
         }
 
         sessionTitle.setText(item.getName());
-        usersCount.setText(item.getUsersCount() + " aktywnych użytkowników w sesji");
+        usersCount.setText(item.getUsersCount() + " active participants");
         ownerImage.setVisible(item.isOwner());
 
         if (item.isStarted()) {

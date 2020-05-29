@@ -138,7 +138,7 @@ abstract public class AbstractSessionStage extends Stage {
         }
 
         // właściwości okna
-        setTitle("Sesja - " + sessionName + " (Użytkownik: " + username + ")");
+        setTitle("Session - " + sessionName + " (User: " + username + ")");
         setWidth(1024);
         setHeight(742);
         setOnCloseRequest(this::onCloseRequest);
@@ -158,16 +158,16 @@ abstract public class AbstractSessionStage extends Stage {
         userList.setContextMenu(new ContextMenu());
         participantsList.setContextMenu(new ContextMenu());
 
-        MenuItem activeKick = new MenuItem("Wyrzuć");
+        MenuItem activeKick = new MenuItem("Kick");
         activeKick.setId("kick");
 
-        MenuItem participantKick = new MenuItem("Wyrzuć");
+        MenuItem participantKick = new MenuItem("Kick");
         participantKick.setId("kick-participant");
 
-        MenuItem activeVoice = new MenuItem("Nadaj/odebraj głos");
+        MenuItem activeVoice = new MenuItem("Give/revoke voice");
         activeVoice.setId("voice");
 
-        MenuItem participantVoice = new MenuItem("Nadaj/odebraj głos");
+        MenuItem participantVoice = new MenuItem("Give/revoke voice");
         participantVoice.setId("voice-participant");
 
         userList.getContextMenu().getItems().addAll(activeKick, activeVoice);
@@ -252,12 +252,12 @@ abstract public class AbstractSessionStage extends Stage {
 
     protected void partUser(SessionUser user) {
         userList.getItems().remove(user);
-        addMessage(null, user.getName() + " opuścił sesję");
+        addMessage(null, user.getName() + " left");
     }
 
     protected void joinUser(SessionUser user) {
         addActiveUser(user);
-        addMessage(null, user.getName() + " dołączył do sesji");
+        addMessage(null, user.getName() + " joined the session");
     }
 
     protected void updateUser(SessionUser user) {
@@ -280,15 +280,15 @@ abstract public class AbstractSessionStage extends Stage {
         if (oldUser != null) {
             if (oldUser.getFlags().contains(SessionUserFlag.Invited)
                     && !user.getFlags().contains(SessionUserFlag.Invited)) {
-                addMessage(null, user.getName() + " zaakceptował zaproszenie");
+                addMessage(null, user.getName() + " accepted invite");
             }
 
             if (oldUser.getFlags().contains(SessionUserFlag.Voice)
                     && !user.getFlags().contains(SessionUserFlag.Voice)) {
-                addMessage(null, user.getName() + " stracił prawo głosu");
+                addMessage(null, user.getName() + " lost his voice");
             } else if (!oldUser.getFlags().contains(SessionUserFlag.Voice)
                     && user.getFlags().contains(SessionUserFlag.Voice)) {
-                addMessage(null, user.getName() + " otrzymał prawo głosu");
+                addMessage(null, user.getName() + " received voice");
             }
         }
     }
@@ -385,11 +385,11 @@ abstract public class AbstractSessionStage extends Stage {
     protected String getStateButtonText(Main.Session.State state) {
         switch (state) {
             case Started:
-                return "Zakończ sesję";
+                return "Finish session";
             case SettingUp:
-                return "Rozpocznij sesję";
+                return "Start new session";
             default:
-                return "Zakończona sesja";
+                return "Finished session";
         }
     }
 
@@ -412,15 +412,15 @@ abstract public class AbstractSessionStage extends Stage {
     }
 
     protected void setName(String name) {
-        setTitle("Sesja - " + name + " (Użytkownik: " + handshakeAck.getName() + ")");
-        addMessage(null, "Nazwa sesji została zmieniona");
+        setTitle("Session - " + name + " (User: " + handshakeAck.getName() + ")");
+        addMessage(null, "Session name has been changed");
     }
 
     protected void setState(Main.Session.State state) {
         if (state == Main.Session.State.Finished) {
-            addMessage(null, "Sesja została zakończona");
+            addMessage(null, "Session has finished");
         } else if (state == Main.Session.State.Started) {
-            addMessage(null, "Sesja została rozpoczęta");
+            addMessage(null, "Session has started");
         }
     }
 
@@ -434,7 +434,7 @@ abstract public class AbstractSessionStage extends Stage {
 
     protected void inviteUser(SessionUser user) {
         addParticipant(user);
-        addMessage(null, user.getName() + " został zaproszony do sesji");
+        addMessage(null, user.getName() + " has been invited");
     }
 
     protected void kickUser(SessionUser user, SessionEvents.Kicked.Reason reason) {
@@ -442,16 +442,16 @@ abstract public class AbstractSessionStage extends Stage {
 
         switch (reason) {
             case Declined:
-                addMessage(null, user.getName() + " odrzucił zaproszenie do sesji");
+                addMessage(null, user.getName() + " declined the invite");
                 break;
 
             default:
-                addMessage(null, user.getName() + " został wyrzucony z sesji");
+                addMessage(null, user.getName() + " was kicked");
         }
     }
 
     protected void addImageInfo(String info) {
-        addMessage(null, "Zdjęcie " + info + " zostało dodane");
+        addMessage(null, "Image " + info + " has been added");
     }
 
     protected void addMessage(SessionUser user, String msg) {
@@ -493,7 +493,7 @@ abstract public class AbstractSessionStage extends Stage {
             imageList.getSelectionModel().clearSelection();
         }
 
-        addMessage(null, "Zdjęcie " + img.getName() + " zostało usunięte");
+        addMessage(null, "Image " + img.getName() + " has been removed");
     }
 
     @FXML
@@ -516,9 +516,9 @@ abstract public class AbstractSessionStage extends Stage {
     private void onInviteButton(ActionEvent event) {
         TextInputDialog dialog = new TextInputDialog("");
 
-        dialog.setTitle("Zaproś użytkownika");
-        dialog.setHeaderText("Zaproś użytkownika do sesji");
-        dialog.setContentText("Nazwa użytkownika:");
+        dialog.setTitle("Invite user");
+        dialog.setHeaderText("Invite user to session");
+        dialog.setContentText("Username:");
 
         Optional<String> result = dialog.showAndWait();
 
@@ -547,7 +547,7 @@ abstract public class AbstractSessionStage extends Stage {
                 data = stream.toByteArray();
                 onUploadImage(data, file.getName());
             } catch (IOException e) {
-                addMessage(null, "Nieprawidłowy format obrazka: " + e.getMessage());
+                addMessage(null, "Invalid image format: " + e.getMessage());
             }
         }
     }
@@ -579,8 +579,6 @@ abstract public class AbstractSessionStage extends Stage {
             imageEditor.changeZoom(img.getZoom());
             imageEditor.getFragments().clear();
             imageEditor.getFragments().addAll(img.getFragments());
-
-
         }
     }
 
@@ -646,9 +644,9 @@ abstract public class AbstractSessionStage extends Stage {
     private void onImageKeyPressed(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("UWAGA");
-            alert.setHeaderText("Potwierdzenie");
-            alert.setContentText("Czy na pewno chcesz usunąć ten obraz?");
+            alert.setTitle("CAUTION");
+            alert.setHeaderText("Confirmation");
+            alert.setContentText("Are you sure you want to remove this image?");
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK){

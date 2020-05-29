@@ -42,14 +42,14 @@ public class ServerInstance {
 
         // jeśli nie dostaliśmy jeszcze kontroli nad programem to błędy przekierowujemy
         if (!hasControl) {
-            errorFunction.error("Połączenie zostało utracone");
+            errorFunction.error("Connection has been lost");
             return;
         }
 
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Błąd");
-        alert.setHeaderText("Błąd połączenia z serwerem");
-        alert.setContentText("Połączenie zostało utracone");
+        alert.setTitle("Error");
+        alert.setHeaderText("Server connection error");
+        alert.setContentText("Connection has been lost");
 
         alert.showAndWait();
 

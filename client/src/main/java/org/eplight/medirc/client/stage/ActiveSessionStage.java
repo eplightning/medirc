@@ -172,9 +172,9 @@ public class ActiveSessionStage extends AbstractSessionStage {
     private void onYouAreKicked(Main.SessionKicked msg) {
         if (msg.getSession().getId() == id) {
             Alert al = new Alert(Alert.AlertType.WARNING);
-            al.setTitle("Wyrzucony");
-            al.setHeaderText("Wyrzucony");
-            al.setContentText("Zostałeś wyrzucony z tej sesji");
+            al.setTitle("Kicked");
+            al.setHeaderText("Kicked");
+            al.setContentText("You have been kicked from this session");
 
             al.showAndWait();
 
@@ -226,7 +226,7 @@ public class ActiveSessionStage extends AbstractSessionStage {
             return;
 
         if (!msg.getSuccess())
-            addMessage(null, "Błąd: " + msg.getError());
+            addMessage(null, "Error: " + msg.getError());
     }
 
     private void setupView(SessionResponses.JoinResponse msg) {
@@ -272,22 +272,22 @@ public class ActiveSessionStage extends AbstractSessionStage {
             if (autoInfo != null) {
                 switch (autoInfo.getState()) {
                     case AutoNone:
-                        setRequestVoiceText("Poproś o głos", true, false);
+                        setRequestVoiceText("Ask for a voice", true, false);
                         break;
 
                     case AutoQueued:
-                        setRequestVoiceText("W kolejce o głos (" +
+                        setRequestVoiceText("In queue (" +
                                 autoInfo.getQueuePosition() + "/" + autoInfo.getQueueUsers() + ")", true, true);
                         break;
 
                     case AutoVoiced:
-                        setRequestVoiceText("Oddaj głos (" + autoInfo.getQueueUsers() + ")", true, true);
+                        setRequestVoiceText("Give up voice (" + autoInfo.getQueueUsers() + ")", true, true);
                 }
             } else {
-                setRequestVoiceText("Poproś o głos", true, false);
+                setRequestVoiceText("Ask for a voice", true, false);
             }
         } else {
-            setRequestVoiceText("Poproś o głos", false, false);
+            setRequestVoiceText("Ask for a voice", false, false);
         }
     }
 
