@@ -21,16 +21,16 @@
     <RowConstraints maxHeight="73.0" minHeight="10.0" percentHeight="20.0" prefHeight="39.0" vgrow="NEVER" />
   </rowConstraints>
    <children>
-      <Label text="Pobieranie sesji ..." GridPane.halignment="CENTER" GridPane.rowSpan="4" GridPane.valignment="CENTER">
+      <Label text="Downloading session ..." GridPane.halignment="CENTER" GridPane.rowSpan="4" GridPane.valignment="CENTER">
          <font>
             <Font name="System Bold" size="15.0" />
          </font>
       </Label>
       <ProgressBar fx:id="progress" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="20.0" prefWidth="367.0" progress="0.34" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.vgrow="ALWAYS" />
-      <Label fx:id="downloadedBlocks" text="Pobrano bloków: 5" GridPane.columnIndex="1" />
-      <Label fx:id="remainingBlocks" text="Pozostało bloków: 2" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <Label fx:id="blockSize" text="Bajtów w bloku: 512" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Label fx:id="filenameLabel" text="Plik: plik.db" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <Label fx:id="downloadedBlocks" text="Downloaded blocks: 5" GridPane.columnIndex="1" />
+      <Label fx:id="remainingBlocks" text="Blocks remaining: 2" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Label fx:id="blockSize" text="Bytes per block: 512" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Label fx:id="filenameLabel" text="Filename: plik.db" GridPane.columnIndex="1" GridPane.rowIndex="3" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

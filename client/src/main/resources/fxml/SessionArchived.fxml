@@ -34,7 +34,7 @@
                         <Insets left="10.0" />
                     </GridPane.margin>
                     <children>
-                        <Label fx:id="sessionTitle" text="Tytuł sesji">
+                        <Label fx:id="sessionTitle" text="Session title">
                             <font>
                                 <Font name="System Bold" size="13.0" />
                             </font>
@@ -49,7 +49,7 @@
                         </ImageView>
                     </children>
                 </HBox>
-                <Button mnemonicParsing="false" onAction="#onDownload" text="Pobierz" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                <Button mnemonicParsing="false" onAction="#onDownload" text="Download" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
             </children>
             <HBox.margin>
                 <Insets />

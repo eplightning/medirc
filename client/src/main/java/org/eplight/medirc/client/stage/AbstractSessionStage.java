@@ -387,7 +387,7 @@ abstract public class AbstractSessionStage extends Stage {
             case Started:
                 return "Finish session";
             case SettingUp:
-                return "Start new session";
+                return "Start session";
             default:
                 return "Finished session";
         }

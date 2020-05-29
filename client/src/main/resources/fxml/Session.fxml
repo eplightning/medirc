@@ -35,7 +35,7 @@
                   <Insets left="10.0" />
                </GridPane.margin>
                <children>
-                  <Label fx:id="sessionTitle" text="Tytuł sesji">
+                  <Label fx:id="sessionTitle" text="Session title">
                      <font>
                         <Font name="System Bold" size="13.0" />
                      </font>
@@ -50,13 +50,13 @@
                   </ImageView>
                </children>
             </HBox>
-            <Label fx:id="usersCount" text="28 użytkowników" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <Label fx:id="usersCount" text="28 users" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <padding>
                   <Insets left="10.0" />
                </padding>
             </Label>
-            <Button fx:id="acceptInvite" mnemonicParsing="false" onAction="#onAcceptInvite" text="Akceptuj" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-            <Button fx:id="declineInvite" mnemonicParsing="false" onAction="#onDeclineInvite" text="Odrzuć" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+            <Button fx:id="acceptInvite" mnemonicParsing="false" onAction="#onAcceptInvite" text="Accept" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+            <Button fx:id="declineInvite" mnemonicParsing="false" onAction="#onDeclineInvite" text="Refuse" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
          </children>
          <HBox.margin>
             <Insets />

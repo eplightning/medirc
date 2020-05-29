@@ -16,11 +16,11 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu mnemonicParsing="false" text="Serwer">
+        <Menu mnemonicParsing="false" text="Server">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#newSessionPushed" text="Nowa sesja" />
-            <MenuItem mnemonicParsing="false" onAction="#disconnectPushed" text="Rozłącz" />
-            <MenuItem mnemonicParsing="false" onAction="#closePushed" text="Zamknij" />
+            <MenuItem mnemonicParsing="false" onAction="#newSessionPushed" text="New session" />
+            <MenuItem mnemonicParsing="false" onAction="#disconnectPushed" text="Disconnect" />
+            <MenuItem mnemonicParsing="false" onAction="#closePushed" text="Close" />
           </items>
         </Menu>
       </menus>
@@ -35,18 +35,18 @@
                            <children>
                               <ToolBar prefHeight="40.0" prefWidth="200.0">
                                 <items>
-                                  <Button fx:id="createNewSession" mnemonicParsing="false" onAction="#newSessionPushed" text="Rozpocznij nową sesję" />
-                                    <Button mnemonicParsing="false" onAction="#onLoadSessionFile" text="Wczytaj plik sesji" />
+                                  <Button fx:id="createNewSession" mnemonicParsing="false" onAction="#newSessionPushed" text="Start new session" />
+                                    <Button mnemonicParsing="false" onAction="#onLoadSessionFile" text="Load session file" />
                                 </items>
                               </ToolBar>
                               <TabPane prefHeight="468.0" prefWidth="566.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                                 <tabs>
-                                  <Tab text="Aktywne sesje">
+                                  <Tab text="Active sessions">
                                        <content>
                                           <ListView fx:id="activeSessions" prefHeight="200.0" prefWidth="200.0" />
                                        </content>
                                   </Tab>
-                                    <Tab text="Archiwum sesji">
+                                    <Tab text="Session archive">
                                        <content>
                                           <ListView fx:id="archivedSessions" prefHeight="200.0" prefWidth="200.0" />
                                        </content>

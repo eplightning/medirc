@@ -18,7 +18,7 @@
   </rowConstraints>
    <children>
       <Slider fx:id="slider" blockIncrement="1.0" showTickLabels="true" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-      <Button mnemonicParsing="false" onAction="#onPlayPauseClicked" text="Wznów / Pauza" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+      <Button mnemonicParsing="false" onAction="#onPlayPauseClicked" text="Resume / Pause" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

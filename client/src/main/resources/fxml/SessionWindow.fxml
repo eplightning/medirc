@@ -35,10 +35,10 @@
                      <children>
                         <ToolBar prefHeight="40.0" prefWidth="200.0">
                           <items>
-                            <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Dodaj zdjęcie" />
-                              <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Zaproś" />
-                              <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Rozpocznij sesję" />
-                              <ToggleButton fx:id="autoVoiceButton" mnemonicParsing="false" onAction="#onAutoVoicePressed" text="Automatyczny głos" />
+                            <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#onSettingsButton" text="Add image" />
+                              <Button fx:id="inviteButton" mnemonicParsing="false" onAction="#onInviteButton" text="Invite" />
+                              <Button fx:id="sessionButton" mnemonicParsing="false" onAction="#onSessionButton" text="Start session" />
+                              <ToggleButton fx:id="autoVoiceButton" mnemonicParsing="false" onAction="#onAutoVoicePressed" text="Auto-voice" />
                           </items>
                         </ToolBar>
                         <ScrollPane fx:id="chatScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
@@ -58,7 +58,7 @@
                                     <Insets left="20.0" />
                                  </HBox.margin>
                                  <children>
-                                    <Button fx:id="sendButton" alignment="CENTER" mnemonicParsing="false" onAction="#onSendButtonPressed" text="Wyślij" AnchorPane.bottomAnchor="0.0" />
+                                    <Button fx:id="sendButton" alignment="CENTER" mnemonicParsing="false" onAction="#onSendButtonPressed" text="Send" AnchorPane.bottomAnchor="0.0" />
                                  </children>
                               </AnchorPane>
                            </children>
@@ -72,12 +72,12 @@
                      <children>
                         <TabPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <tabs>
-                              <Tab closable="false" text="Aktywni">
+                              <Tab closable="false" text="Active">
                                  <content>
                                     <ListView fx:id="userList" prefHeight="487.0" prefWidth="195.0" />
                                  </content>
                               </Tab>
-                              <Tab closable="false" text="Zaproszeni">
+                              <Tab closable="false" text="Invited">
                                  <content>
                                     <ListView fx:id="participantsList" prefHeight="487.0" prefWidth="195.0" />
                                  </content>
@@ -94,16 +94,16 @@
          <children>
             <ToolBar prefHeight="40.0" prefWidth="200.0">
               <items>
-                  <ToggleButton fx:id="requestVoiceButton" disable="true" mnemonicParsing="false" onAction="#onRequestVoiceButton" text="Poproś o głos" />
+                  <ToggleButton fx:id="requestVoiceButton" disable="true" mnemonicParsing="false" onAction="#onRequestVoiceButton" text="Ask for a voice" />
                   <!--<ToggleButton fx:id="syncToggle" mnemonicParsing="false" onAction="#onSyncToggle" text="Synchronizacja" />-->
-                  <Button fx:id="focusButton" mnemonicParsing="false" onAction="#onFocusButton" text="Uwaga" />
-                  <MenuButton mnemonicParsing="false" text="Czyszczenie">
+                  <Button fx:id="focusButton" mnemonicParsing="false" onAction="#onFocusButton" text="Focus" />
+                  <MenuButton mnemonicParsing="false" text="Clear">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#onClearMySelection" text="Usuń moje zaznaczenia" />
-                      <MenuItem fx:id="clearAllSelection" disable="true" mnemonicParsing="false" onAction="#onClearAllSelection" text="Usuń wszystkie zaznaczenia" />
+                      <MenuItem mnemonicParsing="false" onAction="#onClearMySelection" text="Remove my selections" />
+                      <MenuItem fx:id="clearAllSelection" disable="true" mnemonicParsing="false" onAction="#onClearAllSelection" text="Remove all selections" />
                     </items>
                   </MenuButton>
-                  <ColorPicker fx:id="selectColorPicker" onAction="#onSelectColorPicked" promptText="Kolor zaznaczenia" />
+                  <ColorPicker fx:id="selectColorPicker" onAction="#onSelectColorPicked" promptText="Selection color" />
               </items>
             </ToolBar>
             <ScrollPane fx:id="imagePaneScroll" fitToHeight="true" pannable="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
