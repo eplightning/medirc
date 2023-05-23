@@ -28,7 +28,7 @@
         <netty.version>4.1.50.Final</netty.version>
         <guice.version>4.2.3</guice.version>
         <imgscalr-lib.version>4.2</imgscalr-lib.version>
-        <sqlite-jdbc.version>3.31.1</sqlite-jdbc.version>
+        <sqlite-jdbc.version>3.41.2.2</sqlite-jdbc.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
         <javafx.version>11</javafx.version>
     </properties>
